@@ -1,0 +1,4 @@
+#Sun Mar 12 14:55:08 CET 2017
+base.0=/Users/ist1/Dev/cabm8/android/app/build/intermediates/transforms/dex/debug/folders/1000/1f/main
+renamed.0=classes.dex
+file.0=/Users/ist1/Dev/cabm8/android/app/build/intermediates/transforms/dex/debug/folders/1000/1f/main/classes.dex
