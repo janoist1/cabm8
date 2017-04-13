@@ -1,77 +1,98 @@
 import {
-  UPDATE_CURRENT_LOCATION,
-  SET_DOT_COLOR,
+  SET_POSITION,
+  SET_REGION,
+  SET_ADDRESS,
 } from '../constants/main'
-import * as map from './map'
 import * as directions from './directions'
 
 
-const key = 'AIzaSyBQa1S8MneTUG8WXxS1wpaJVyACKEnvcCs'
-
-export const updateCurrentLocation = location => ({
-  type: UPDATE_CURRENT_LOCATION,
-  payload: location,
+export const setPosition = position => ({
+  type: SET_POSITION,
+  payload: position,
 })
 
-export const goToCurrentLocation = () => (dispatch, getState) =>
-  dispatch(map.changeRegion({
-    ...getState().map.region,
-    ...getState().main.currentLocation.coordinate,
+export const setRegion = region => ({
+  type: SET_REGION,
+  payload: region,
+})
+
+export const setAddress = address => ({
+  type: SET_ADDRESS,
+  payload: address,
+})
+
+export const goToCoordinate = coordinate => (dispatch, getState) =>
+  dispatch(setRegion({
+    ...getState().main.region,
+    ...coordinate,
   }))
 
-export const changeCoordinate = coordinate => (dispatch, getState) => { // fixme: change fn name
-  const { isOpen, isLocked, selectedWaypointIndex, waypoints } = getState().directions
-  const lookupCoordinate = coordinate =>
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}&key=${key}`)
-      .then(response => response.json())
+export const goToMyPosition = () => (dispatch, getState) =>
+  getState().main.position && dispatch(goToCoordinate({
+    latitude: getState().main.position.latitude,
+    longitude: getState().main.position.longitude,
+  }))
 
-  if (isOpen && isLocked) {
+export const changeRegion = region => (dispatch, getState) => {
+  dispatch(setRegion(region))
+
+  const coordinate = {
+    latitude: region.latitude,
+    longitude: region.longitude,
+  }
+  const { visible, editing, selectedWaypointIndex, waypoints } = getState().directions
+  const selectedWaypoint = waypoints[selectedWaypointIndex]
+  const lookupCoordinate = coordinate =>
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}`) //&key=${key}
+      .then(response => response.json())
+  const toFixed = n => n.toFixed(5) * 1
+
+  // todo: wrap into fn
+  if (visible && selectedWaypoint &&
+    toFixed(selectedWaypoint.coordinate.latitude) === toFixed(coordinate.latitude) &&
+    toFixed(selectedWaypoint.coordinate.longitude) === toFixed(coordinate.longitude)) {
     return
   }
 
-  // todo: wrap into fn
-  if (waypoints.length) {
-    const selectedWaypointCoordinate = waypoints[selectedWaypointIndex].coordinate
-    if (isOpen &&
-      selectedWaypointCoordinate.latitude === coordinate.latitude &&
-      selectedWaypointCoordinate.longitude === coordinate.longitude)
-    {
-      return
-    }
+  if (visible && !editing) {
+    return
   }
 
-  lookupCoordinate(coordinate).then(json => {
-    if (!json.results.length) {
-      return
-    }
+  lookupCoordinate(coordinate)
+    .then(json => {
+      if (json.error_message) {
+        throw Error(json.error_message)
+      }
 
-    const result = json.results[0]
-    const waypoint = {
-      address: result.formatted_address,
-      coordinate,
-    }
+      if (!json.results.length) {
+        return
+      }
 
-    if (isOpen) {
-      dispatch([
-        directions.updateWaypoint(selectedWaypointIndex, waypoint),
-        map.updateMarker({
-          identifier: selectedWaypointIndex,
-          coordinate: waypoint.coordinate,
-        }),
-      ])
-    } else {
-      dispatch(updateCurrentLocation(waypoint))
-    }
-  })
+      const result = json.results[0]
+      const address = result.formatted_address
+
+      dispatch(setAddress(address))
+
+      if (visible) {
+        dispatch([
+          directions.invalidatePolylines(selectedWaypointIndex),
+          directions.updateWaypoint(selectedWaypointIndex, {
+            address,
+            coordinate,
+          }),
+        ])
+      }
+    })
 }
 
 export const openDirections = () => (dispatch, getState) => {
-  const state = getState()
+  const main = getState().main
 
-  dispatch(directions.openDirections(state.main.currentLocation))
+  dispatch(directions.openDirections({
+    address: main.address,
+    coordinate: {
+      latitude: main.region.latitude,
+      longitude: main.region.longitude,
+    },
+  }))
 }
-
-export const setDotColor = color => ({
-  type: SET_DOT_COLOR,
-  payload: color,
-})

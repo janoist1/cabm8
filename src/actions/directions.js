@@ -1,76 +1,25 @@
-// import
 import {
   DIRECTIONS_SHOW,
   DIRECTIONS_HIDE,
   DIRECTIONS_ADD_WAYPOINT,
   DIRECTIONS_UPDATE_WAYPOINT,
-  DIRECTIONS_SELECT_WAYPOINT,
+  DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
   DIRECTIONS_RESET_WAYPOINTS,
-  DIRECTIONS_LOCK,
-  DIRECTIONS_UNLOCK,
+  DIRECTIONS_SET_EDITING,
+  DIRECTIONS_INVALIDATE_POLYLINES,
 } from '../constants/directions'
 import * as main from './main'
-import * as map from './map'
 
 
-const key = 'AIzaSyBQa1S8MneTUG8WXxS1wpaJVyACKEnvcCs'
 const defaultWaypoint = {
   address: '',
   coordinate: undefined,
-  cost: 0,
   color: undefined,
-  ratio: 0,
   distance: 0,
+  fare: 0,
+  passengers: 0,
   polyline: undefined,
-}
-const selectedWaypointPolyline = {
-  strokeWidth: 3,
-}
-const lastWaypointPolyline = {
-  strokeWidth: 5,
-  strokeColor: 'grey',
-}
-
-export const openDirections = origin => [
-  createWaypoint({
-    ...defaultWaypoint,
-    ...origin,
-  }),
-  showDirections(),
-]
-
-export const closeDirections = () => [
-  hideDirections(),
-  resetWaypoints(),
-  main.goToCurrentLocation(),
-  main.setDotColor('black'),
-  map.removeAllMarkers(),
-  map.setPolylines([]),
-]
-
-export const startEditing = () => [
-  unlock(),
-  map.setPolylines([]),
-]
-
-export const finishEditing = () => (dispatch, getState) => {
-  const { selectedWaypointIndex } = getState().directions
-
-  dispatch([
-    lock(),
-    invalidatePolylinesFromIndex(selectedWaypointIndex),
-    getDirections(),
-  ])
-}
-
-export const invalidatePolylinesFromIndex = selectedWaypointIndex => (dispatch, getState) => {
-  const { waypoints } = getState().directions
-
-  for (let index = selectedWaypointIndex; index < waypoints.length; index++) {
-    dispatch(updateWaypoint(index, {
-      polyline: undefined,
-    }))
-  }
+  visible: false,
 }
 
 export const showDirections = () => ({
@@ -80,6 +29,45 @@ export const showDirections = () => ({
 export const hideDirections = () => ({
   type: DIRECTIONS_HIDE,
 })
+
+export const invalidatePolylines = (index = 0) => ({
+  type: DIRECTIONS_INVALIDATE_POLYLINES,
+  payload: index,
+})
+
+export const openDirections = ({address, coordinate}) => [
+  createWaypoint({
+    ...defaultWaypoint,
+    address,
+    coordinate,
+  }),
+  showDirections(),
+  startEditing(),
+]
+
+export const closeDirections = () => [
+  hideDirections(),
+  finishEditing(),
+  resetWaypoints(),
+  main.goToMyPosition(),
+]
+
+export const startEditing = () => (dispatch, getState) =>
+  dispatch([
+    main.goToCoordinate(getState().directions.waypoints[getState().directions.selectedWaypointIndex].coordinate),
+    updateWaypoint(getState().directions.selectedWaypointIndex, { visible: false }),
+    setEditing(true),
+  ])
+
+export const finishEditing = () => (dispatch, getState) => {
+  const { selectedWaypointIndex } = getState().directions
+
+  dispatch([
+    updateWaypoint(selectedWaypointIndex, { visible: true }),
+    setEditing(false),
+    getDirections(),
+  ])
+}
 
 export const addWaypoint = waypoint => ({
   type: DIRECTIONS_ADD_WAYPOINT,
@@ -94,23 +82,28 @@ export const updateWaypoint = (index, waypoint) => ({
   },
 })
 
-export const selectWaypoint = index => ({
-  type: DIRECTIONS_SELECT_WAYPOINT,
+export const setSelectedWaypointIndex = index => ({
+  type: DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
   payload: index,
 })
 
-export const selectAndGoToWaypoint = index => (dispatch, getState) => { // todo: selectWaypoint + setSelectedWaypoint
-  dispatch(selectWaypoint(index))
-
+export const selectWaypoint = index => (dispatch, getState) => {
   const { directions } = getState()
-  const selectedWaypoint = directions.waypoints[directions.selectedWaypointIndex]
+  const { editing, selectedWaypointIndex, waypoints } = directions
+
+  if (editing) {
+    dispatch([
+      updateWaypoint(selectedWaypointIndex, { visible: true }),
+      updateWaypoint(index, { visible: false }),
+      main.goToCoordinate(waypoints[index].coordinate),
+    ])
+  }
 
   dispatch([
-    main.setDotColor(selectedWaypoint.color),
-    map.goToCoordinate(selectedWaypoint.coordinate),
+    setSelectedWaypointIndex(index),
   ])
 
-  if (directions.isLocked) {
+  if (!editing) {
     dispatch(getDirections())
   }
 }
@@ -129,16 +122,25 @@ export const createWaypoint = (waypoint = {...defaultWaypoint}) => (dispatch, ge
   }
 
   dispatch([
-    startEditing(),
     addWaypoint(waypoint),
-    selectWaypoint(selectedWaypointIndex),
-    map.addMarker({
-      identifier: selectedWaypointIndex,
-      coordinate: waypoint.coordinate,
-      color: waypoint.color,
-    }),
-    main.setDotColor(waypoint.color),
+    setSelectedWaypointIndex(selectedWaypointIndex),
   ])
+}
+
+export const addNextWaypoint = () => (dispatch, getState) => {
+  const { directions } = getState()
+  const { selectedWaypointIndex, waypoints } = directions
+  const selectedWaypoint = waypoints[selectedWaypointIndex]
+
+  if (!directions.editing) {
+    dispatch(startEditing())
+  }
+
+  if (!selectedWaypoint.visible) {
+    dispatch(updateWaypoint(selectedWaypointIndex, { visible: true }))
+  }
+
+  dispatch(createWaypoint())
 }
 
 export const removeWaypoint = index => ({
@@ -150,18 +152,24 @@ export const resetWaypoints = () => ({
   type: DIRECTIONS_RESET_WAYPOINTS,
 })
 
-export const lock = () => ({
-  type: DIRECTIONS_LOCK,
+export const setEditing = editing => ({
+  type: DIRECTIONS_SET_EDITING,
+  payload: editing,
 })
 
-export const unlock = () => ({
-  type: DIRECTIONS_UNLOCK,
-})
+export const submitWaypointAddress = address => (dispatch, getState) => {
+  const { directions } = getState()
+  const { selectedWaypointIndex } = directions
 
-export const submitWaypoint = (index, waypoint) => (dispatch, getState) => {
-  const state = getState()
+  if (directions.waypoints[selectedWaypointIndex].address === address) {
+    return
+  }
 
-  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${waypoint.address}&key=${key}`)
+  if (!directions.editing) {
+    dispatch(startEditing())
+  }
+
+  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}`) //&key=${key}
     .then(response => response.json())
     .then(json => {
       if (!json.results.length) {
@@ -174,21 +182,39 @@ export const submitWaypoint = (index, waypoint) => (dispatch, getState) => {
       const coordinate = {latitude, longitude}
 
       dispatch([
-        updateWaypoint(index, {
+        updateWaypoint(selectedWaypointIndex, {
           address: result.formatted_address,
           coordinate,
         }),
-        map.updateMarker({
-          identifier: index,
-          coordinate: waypoint.coordinate,
-          title: waypoint.address,
-        }),
-        map.changeRegion({
-          ...state.map.region,
-          ...coordinate,
-        }),
+        main.goToCoordinate(coordinate),
       ])
     })
+}
+
+export const submitWaypointFare = fare => (dispatch, getState) => {
+  const { directions } = getState()
+  const { selectedWaypointIndex } = directions
+
+  if (directions.waypoints[selectedWaypointIndex].fare === fare) {
+    return
+  }
+
+  dispatch(updateWaypoint(selectedWaypointIndex, { fare }))
+}
+
+export const submitWaypointPassengers = passengers => (dispatch, getState) => {
+  const { directions } = getState()
+  const { selectedWaypointIndex } = directions
+
+  if (passengers < 1 || passengers > 6) {
+    return
+  }
+
+  if (directions.waypoints[selectedWaypointIndex].passengers === passengers) {
+    return
+  }
+
+  dispatch(updateWaypoint(selectedWaypointIndex, { passengers }))
 }
 
 export const getDirections = () => (dispatch, getState) => {
@@ -219,13 +245,14 @@ export const getDirections = () => (dispatch, getState) => {
         .slice(1, -1)
     )
 
-    url += `?origin=${origin}&destination=${destination}&key=${key}`;
-    url += waypointsStr.length > 0 ? `&waypoints=${waypointsStr}` : '';
+    url += `?origin=${origin}&destination=${destination}` // &key=${key}
+    url += waypointsStr.length > 0 ? `&waypoints=${waypointsStr}` : ''
 
     return fetch(url)
       .then(response => response.json())
       .then(json => {
         if (!json.routes.length) {
+          console.log({url, json})
           throw Error('No route found')
         }
 
@@ -237,62 +264,43 @@ export const getDirections = () => (dispatch, getState) => {
     return
   }
 
+  const lastWaypointIndex = directions.waypoints.length - 1
   const selectedWaypoint = directions.waypoints[directions.selectedWaypointIndex]
-  const lastWaypoint = directions.waypoints.slice(-1)[0]
+  const lastWaypoint = directions.waypoints[lastWaypointIndex]
   const getRouteToSelectedWaypoint = () => getRoute(directions.waypoints.slice(0, directions.selectedWaypointIndex + 1))
   const getRouteToLastWaypoint = () => getRoute(directions.waypoints)
 
-    ;(async () => {
-    const polylines = []
+  ;(async () => {
+    if (!selectedWaypoint.polyline && directions.selectedWaypointIndex > 0) {
+      const route = await getRouteToSelectedWaypoint()
+      const distance = route.legs.reduce((distance, leg) => distance + leg.distance.value, 0)
 
-    if (directions.selectedWaypointIndex > 0) {
-      let polyline = selectedWaypoint.polyline
-
-      if (!polyline) {
-        const routeToSelectedWaypoint = await getRouteToSelectedWaypoint()
-
-        polyline = {
-          coordinates: decodePolyline(routeToSelectedWaypoint.overview_polyline.points),
-        }
-      }
-
-      polylines.push({
-        ...polyline,
-        ...selectedWaypointPolyline,
-        strokeColor: selectedWaypoint.color,
-      })
+      dispatch(updateWaypoint(directions.selectedWaypointIndex, {
+        fare: 480 + distance * 280 / 1000,
+        distance,
+        polyline: decodePolyline(route.overview_polyline.points),
+      }))
     }
 
-    if (directions.selectedWaypointIndex < directions.waypoints.length - 1) {
-      let polyline = lastWaypoint.polyline
+    if (!lastWaypoint.polyline && directions.selectedWaypointIndex < lastWaypointIndex) {
+      const route = await getRouteToLastWaypoint()
+      const distance = route.legs.reduce((distance, leg) => distance + leg.distance.value, 0)
 
-      if (!polyline) {
-        const routeToLastWaypoint = await getRouteToLastWaypoint()
-
-        polyline = {
-          coordinates: decodePolyline(routeToLastWaypoint.overview_polyline.points),
-        }
-      }
-
-      polylines.push({
-        ...polyline,
-        ...lastWaypointPolyline,
-      })
-    } else {
-      polylines.push({
-        ...polylines[0],
-        ...lastWaypointPolyline,
-      })
+      dispatch(updateWaypoint(lastWaypointIndex, {
+        fare: 480 + distance * 280 / 1000,
+        distance,
+        polyline: decodePolyline(route.overview_polyline.points),
+      }))
     }
 
-    dispatch([
-      // {type: 'ASD', payload: routeToSelectedWaypoint},
-      map.setPolylines([...polylines].reverse()),
-      updateWaypoint(directions.selectedWaypointIndex, {
-        // distance: routeToSelectedWaypoint.legs.reduce((distance, leg) => leg.distance.value, 0) / 1000,
-        polyline: polylines[0],
-      }),
-    ])
+    // dispatch([
+    //   // {type: 'ASD', payload: routeToSelectedWaypoint},
+    //   // map.setPolylines([...polylines].reverse()),
+    //   // updateWaypoint(directions.selectedWaypointIndex, {
+    //   //   // distance: routeToSelectedWaypoint.legs.reduce((distance, leg) => leg.distance.value, 0) / 1000,
+    //   //   polyline: polylines[0],
+    //   // }),
+    // ])
   })()
 }
 

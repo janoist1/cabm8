@@ -1,19 +1,18 @@
 import React, { Component } from 'react'
 import { View, Image, StyleSheet } from 'react-native'
 
-const Dot = ({color = 'black', visible = true, style = {}}) => (
+const Pin = ({color = 'black', visible = true, style = {}}) => (
   visible &&
-  <View pointerEvents="none" style={[styles.container, style]}>
+  <View pointerEvents="none" style={[styles.container, style]} key={color}>
     <View style={styles.dot}>
       <View style={[styles.dotColor, {backgroundColor: color}]} />
     </View>
   </View>
 )
 
-Dot.propTypes = {
+Pin.propTypes = {
   color: React.PropTypes.string,
   visible: React.PropTypes.bool,
-  style: React.PropTypes.object,
 }
 
 const styles = StyleSheet.create({
@@ -37,5 +36,5 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Dot
+export default Pin
 

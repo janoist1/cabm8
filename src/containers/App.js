@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import { connect, Provider } from 'react-redux'
 import { Router } from 'react-native-router-flux'
-import * as map from '../actions/map'
+import * as main from '../actions/main'
 
 
 const RouterWithRedux = connect()(Router)
@@ -13,10 +13,13 @@ class App extends Component {
   }
 
   componentDidMount() { // TODO: move it to a better place
-    const {dispatch} = this.props.store
+    const { dispatch } = this.props.store
     const watchID = navigator.geolocation.watchPosition(
       position => {
-        dispatch(map.changePosition(position))
+        dispatch(main.setPosition({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }))
       },
       {
         enableHighAccuracy: true,

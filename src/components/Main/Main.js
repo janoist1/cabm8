@@ -10,51 +10,46 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import { Actions } from 'react-native-router-flux'
-import Map from '../../containers/Map'
+import Map from '../Map'
 import AddressBar from './AddressBar'
 import Crosshair from './Crosshair'
 import Directions from '../../containers/Directions'
-import Dot from '../Dot'
+import Pin from '../Pin'
 
 
 export default class Main extends Component {
   static propTypes = {
-    currentLocation: React.PropTypes.object.isRequired,
-    goToMyLocation: React.PropTypes.func.isRequired,
-    changeCoordinate: React.PropTypes.func.isRequired,
+    address: React.PropTypes.string.isRequired,
+    goToMyPosition: React.PropTypes.func.isRequired,
+    changeRegion: React.PropTypes.func.isRequired,
     openDirections: React.PropTypes.func.isRequired,
-    isCrosshairVisible: React.PropTypes.bool.isRequired,
-    isDirectionsOpen: React.PropTypes.bool.isRequired,
-    dotColor: React.PropTypes.string.isRequired,
+    crosshairVisible: React.PropTypes.bool.isRequired,
+    directionsVisible: React.PropTypes.bool.isRequired,
+    directionsEditing: React.PropTypes.bool.isRequired,
+    pinColor: React.PropTypes.string.isRequired,
+    map: React.PropTypes.object.isRequired,
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <Map style={styles.map} onRegionChangeComplete={this.props.changeCoordinate}>
-          <Dot
-            style={{
-              zIndex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-            color={this.props.dotColor}
-            visible={!this.props.isDirectionsOpen || !this.props.isDirectionsLocked}
+        <Map style={styles.map} {...this.props.map} onRegionChangeComplete={this.props.changeRegion}>
+          <Pin
+            style={styles.pin}
+            color={this.props.pinColor}
+            visible={!this.props.directionsVisible || this.props.directionsEditing}
           />
 
           <Crosshair style={styles.crosshair}
-                     visible={this.props.isCrosshairVisible}
-                     onPress={this.props.goToMyLocation}
+                     visible={this.props.crosshairVisible}
+                     onPress={this.props.goToMyPosition}
           />
         </Map>
 
         <AddressBar
           style={styles.addressBar}
-          value={this.props.currentLocation.address}
-          visible={!this.props.isDirectionsOpen}
+          value={this.props.address}
+          visible={!this.props.directionsVisible}
           onPress={this.props.openDirections}
         />
 
@@ -74,9 +69,17 @@ const styles = StyleSheet.create({
   addressBar: {
     position: 'absolute',
     left: 18,
-    top: 15,
+    // top: 15,
     right: 18,
     zIndex: 1,
+  },
+  pin: {
+    zIndex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   openDirections: {
     position: 'absolute',

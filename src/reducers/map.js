@@ -12,6 +12,7 @@ import {
   MAP_SET_POLYLINES,
 } from '../constants/map'
 
+
 const { width, height } = Dimensions.get('window')
 const ASPECT_RATIO = width / height
 const LATITUDE = 47.498247

@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux'
 import counter from '../modules/Counter/modules/counter'
 import main from '../reducers/main'
-import map from '../reducers/map'
 import directions from '../reducers/directions'
 
 
@@ -9,7 +8,6 @@ export const makeRootReducer = asyncReducers =>
   combineReducers({
     counter,
     main,
-    map,
     directions,
     ...asyncReducers
   })

@@ -3,21 +3,28 @@ import {
   DIRECTIONS_HIDE,
   DIRECTIONS_ADD_WAYPOINT,
   DIRECTIONS_UPDATE_WAYPOINT,
-  DIRECTIONS_SELECT_WAYPOINT,
+  DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
   DIRECTIONS_RESET_WAYPOINTS,
-  DIRECTIONS_LOCK,
-  DIRECTIONS_UNLOCK,
+  DIRECTIONS_SET_EDITING,
+  DIRECTIONS_INVALIDATE_POLYLINES,
 } from '../constants/directions'
 
+
+const initialState = {
+  visible: false,
+  editing: false,
+  waypoints: [],
+  selectedWaypointIndex: 0,
+}
 
 const ACTION_HANDLERS = {
   [DIRECTIONS_SHOW]: (state, action) => ({
     ...state,
-    isOpen: true,
+    visible: true,
   }),
   [DIRECTIONS_HIDE]: (state, action) => ({
     ...state,
-    isOpen: false,
+    visible: false,
   }),
   [DIRECTIONS_ADD_WAYPOINT]: (state, action) => ({
     ...state,
@@ -33,7 +40,7 @@ const ACTION_HANDLERS = {
       ...action.payload.waypoint,
     }),
   }),
-  [DIRECTIONS_SELECT_WAYPOINT]: (state, action) => ({
+  [DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX]: (state, action) => ({
     ...state,
     selectedWaypointIndex: action.payload,
   }),
@@ -42,23 +49,17 @@ const ACTION_HANDLERS = {
     waypoints: [],
     selectedWaypointIndex: 0,
   }),
-  [DIRECTIONS_LOCK]: (state, action) => ({
+  [DIRECTIONS_SET_EDITING]: (state, action) => ({
     ...state,
-    isLocked: true,
+    editing: action.payload,
   }),
-  [DIRECTIONS_UNLOCK]: (state, action) => ({
+  [DIRECTIONS_INVALIDATE_POLYLINES]: (state, action) => ({
     ...state,
-    isLocked: false,
+    waypoints: state.waypoints.map((waypoint, index) => ({
+      ...waypoint,
+      ...(index >= action.payload ? { polyline: undefined } : {}),
+    })),
   }),
-}
-
-const initialState = {
-  isOpen: false,
-  isLocked: true,
-  waypoints: [],
-  selectedWaypointIndex: 0,
-  routeToSelectedWaypoint: null,
-  routeToDestination: null,
 }
 
 export default (state = initialState, action) => {

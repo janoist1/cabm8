@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dimensions, View, Text, Button, StyleSheet } from 'react-native'
 import MapView from 'react-native-maps'
-import Dot from '../Dot'
+import Pin from '../Pin'
 
 
 export const Map = props => (
@@ -19,7 +19,7 @@ export const Map = props => (
           anchor={{x: 0.5, y: 0.5}}
           key={i}
         >
-          <Dot color={marker.color} />
+          <Pin key={i} color={marker.color} />
         </MapView.Marker>
       ))}
 
@@ -33,7 +33,6 @@ export const Map = props => (
 )
 
 Map.propTypes = {
-  position: React.PropTypes.object,
   region: React.PropTypes.object.isRequired,
   markers: React.PropTypes.array.isRequired,
   polylines: React.PropTypes.array.isRequired,
@@ -48,9 +47,6 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
-  dot: {
-    zIndex: 1,
-}
 })
 
 export default Map

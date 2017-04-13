@@ -1,3 +1,4 @@
-export const UPDATE_CURRENT_LOCATION = 'MAIN_UPDATE_LOCATION'
-export const SET_DOT_COLOR = 'MAIN_SET_DOT_COLOR'
+export const SET_POSITION = 'SET_POSITION'
+export const SET_REGION = 'SET_REGION'
+export const SET_ADDRESS = 'SET_ADDRESS'
 export const MAX_WAYPOINTS = 7

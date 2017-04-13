@@ -1,26 +1,41 @@
+import { Dimensions } from 'react-native'
 import {
-  UPDATE_CURRENT_LOCATION,
-  SET_DOT_COLOR,
+  SET_POSITION,
+  SET_REGION,
+  SET_ADDRESS,
 } from '../constants/main'
 
 
-const ACTION_HANDLERS = {
-  [UPDATE_CURRENT_LOCATION]: (state, action) => ({
-    ...state,
-    currentLocation: action.payload,
-  }),
-  [SET_DOT_COLOR]: (state, action) => ({
-    ...state,
-    dotColor: action.payload,
-  }),
+const { width, height } = Dimensions.get('window')
+const ASPECT_RATIO = width / height
+const LATITUDE = 47.498247
+const LONGITUDE = 19.032445
+const LATITUDE_DELTA = 0.01
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
+const initialState = {
+  address: 'Budapest',
+  position: null,
+  region: {
+    latitude: LATITUDE,
+    longitude: LONGITUDE,
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
+  },
 }
 
-const initialState = {
-  currentLocation: {
-    address: 'Budapest',
-    coordinate: undefined,
-  },
-  dotColor: 'black',
+const ACTION_HANDLERS = {
+  [SET_POSITION]: (state, action) => ({
+    ...state,
+    position: action.payload,
+  }),
+  [SET_REGION]: (state, action) => ({
+    ...state,
+    region: action.payload,
+  }),
+  [SET_ADDRESS]: (state, action) => ({
+    ...state,
+    address: action.payload,
+  }),
 }
 
 export default (state = initialState, action) => {
