@@ -1,3 +1,4 @@
+import { decodePolyline, geocodeAddress, getDirections } from '../lib'
 import {
   DIRECTIONS_SHOW,
   DIRECTIONS_HIDE,
@@ -7,7 +8,6 @@ import {
   DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
   DIRECTIONS_RESET_WAYPOINTS,
   DIRECTIONS_SET_EDITING,
-  DIRECTIONS_INVALIDATE_POLYLINES,
 } from '../constants/directions'
 import * as main from './main'
 
@@ -18,7 +18,7 @@ const defaultWaypoint = {
   distance: 0,
   fare: 0,
   passengers: 0,
-  polyline: undefined,
+  polyline: [],
   visible: false,
 }
 
@@ -28,11 +28,6 @@ export const showDirections = () => ({
 
 export const hideDirections = () => ({
   type: DIRECTIONS_HIDE,
-})
-
-export const invalidatePolylines = (index = 0) => ({
-  type: DIRECTIONS_INVALIDATE_POLYLINES,
-  payload: index,
 })
 
 export const openDirections = ({ address, coordinate }) => [
@@ -47,9 +42,7 @@ export const openDirections = ({ address, coordinate }) => [
 
 export const closeDirections = () => [
   hideDirections(),
-  finishEditing(),
   resetWaypoints(),
-  main.goToMyPosition(),
 ]
 
 export const startEditing = () => (dispatch, getState) =>
@@ -65,7 +58,7 @@ export const finishEditing = () => (dispatch, getState) => {
   dispatch([
     updateWaypoint(selectedWaypointIndex, { visible: true }),
     setEditing(false),
-    getDirections(),
+    updateDirections(),
   ])
 }
 
@@ -104,7 +97,7 @@ export const selectWaypoint = index => (dispatch, getState) => {
   ])
 
   if (!editing) {
-    dispatch(getDirections())
+    dispatch(updateDirections()) // todo: review
   }
 }
 
@@ -169,7 +162,7 @@ export const submitWaypointAddress = address => (dispatch, getState) => {
     dispatch(startEditing())
   }
 
-  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}`) // &key=${key}
+  geocodeAddress(address)
     .then(response => response.json())
     .then(json => {
       if (!json.results.length) {
@@ -217,149 +210,47 @@ export const submitWaypointPassengers = passengers => (dispatch, getState) => {
   dispatch(updateWaypoint(selectedWaypointIndex, { passengers }))
 }
 
-export const getDirections = () => (dispatch, getState) => {
+export const updateDirections = () => (dispatch, getState) => {
   const { directions } = getState()
-  const getRoute = waypoints => {
-    const coordinateToString = coordinate => Object.values(coordinate).join(',')
-    const coordinatesToString = coordinates => coordinates.map(coordinateToString).join('|')
 
-    if (waypoints.length < 2) {
-      return Promise.reject(Error('Not enough waypoints'))
-    }
-
-    let url = `https://maps.googleapis.com/maps/api/directions/json`
-
-    const origin = coordinatesToString(
-      waypoints
-        .map(waypoint => waypoint.coordinate)
-        .slice(0, 1)
-    )
-    const destination = coordinatesToString(
-      waypoints
-        .map(waypoint => waypoint.coordinate)
-        .slice(-1)
-    )
-    const waypointsStr = coordinatesToString(
-      waypoints
-        .map(waypoint => waypoint.coordinate)
-        .slice(1, -1)
-    )
-
-    url += `?origin=${origin}&destination=${destination}` // &key=${key}
-    url += waypointsStr.length > 0 ? `&waypoints=${waypointsStr}` : ''
-
-    return fetch(url)
-      .then(response => response.json())
-      .then(json => {
-        if (!json.routes.length) {
-          console.log({ url, json })
-          throw Error('No route found')
-        }
-
-        return json.routes[0]
-      })
-  }
+  const shouldDirectionsUpdate = waypoints =>
+    waypoints
+      .slice(1)
+      .reduce((changed, waypoint) => changed || waypoint.polyline.length < 1, false)
 
   if (directions.waypoints.length === 1) {
     return
   }
 
-  const lastWaypointIndex = directions.waypoints.length - 1
-  const selectedWaypoint = directions.waypoints[directions.selectedWaypointIndex]
-  const lastWaypoint = directions.waypoints[lastWaypointIndex]
-  const getRouteToSelectedWaypoint = () => getRoute(directions.waypoints.slice(0, directions.selectedWaypointIndex + 1))
-  const getRouteToLastWaypoint = () => getRoute(directions.waypoints)
-
-  ;(async () => {
-    if (!selectedWaypoint.polyline && directions.selectedWaypointIndex > 0) {
-      const route = await getRouteToSelectedWaypoint()
-      const distance = route.legs.reduce((distance, leg) => distance + leg.distance.value, 0)
-
-      dispatch(updateWaypoint(directions.selectedWaypointIndex, {
-        fare: 480 + distance * 280 / 1000,
-        distance,
-        polyline: decodePolyline(route.overview_polyline.points),
-      }))
-    }
-
-    if (!lastWaypoint.polyline && directions.selectedWaypointIndex < lastWaypointIndex) {
-      const route = await getRouteToLastWaypoint()
-      const distance = route.legs.reduce((distance, leg) => distance + leg.distance.value, 0)
-
-      dispatch(updateWaypoint(lastWaypointIndex, {
-        fare: 480 + distance * 280 / 1000,
-        distance,
-        polyline: decodePolyline(route.overview_polyline.points),
-      }))
-    }
-
-    // dispatch([
-    //   // {type: 'ASD', payload: routeToSelectedWaypoint},
-    //   // map.setPolylines([...polylines].reverse()),
-    //   // updateWaypoint(directions.selectedWaypointIndex, {
-    //   //   // distance: routeToSelectedWaypoint.legs.reduce((distance, leg) => leg.distance.value, 0) / 1000,
-    //   //   polyline: polylines[0],
-    //   // }),
-    // ])
-  })()
-}
-
-function getColorForWaypoint (index) {
-  return [
-    'black',
-    'cornflowerblue',
-    'crimson',
-    'limegreen',
-    'darkorange',
-    'gold',
-    'hotpink',
-  ][index]
-}
-
-function decodePolyline (encoded) {
-  if (!encoded) {
-    return []
+  if (!shouldDirectionsUpdate(directions.waypoints)) {
+    return
   }
 
-  const poly = []
-  let index = 0
-  let len = encoded.length
-  let lat = 0
-  let lng = 0
+  const coordinates = directions.waypoints.map(waypoint => waypoint.coordinate)
 
-  while (index < len) {
-    let b
-    let shift = 0
-    let result = 0
+  getDirections(coordinates)
+    .then(route => {
+      let distance = 0
 
-    do {
-      b = encoded.charCodeAt(index++) - 63
-      result = result | ((b & 0x1f) << shift)
-      shift += 5
-    } while (b >= 0x20)
+      route.legs.forEach((leg, index) => {
+        distance += leg.distance.value
 
-    let dlat = (result & 1) !== 0 ? ~(result >> 1) : (result >> 1)
-    lat += dlat
-
-    shift = 0
-    result = 0
-
-    do {
-      b = encoded.charCodeAt(index++) - 63
-      result = result | ((b & 0x1f) << shift)
-      shift += 5
-    } while (b >= 0x20)
-
-    let dlng = (result & 1) !== 0 ? ~(result >> 1) : (result >> 1)
-    lng += dlng
-
-    let p = {
-      latitude: lat / 1e5,
-      longitude: lng / 1e5,
-    }
-
-    poly.push(p)
-  }
-
-  return poly
+        leg.steps.forEach(step => {
+          dispatch(updateWaypoint(index + 1, {
+            distance,
+            polyline: decodePolyline(step.polyline.points),
+          }))
+        })
+      })
+    })
 }
+
+const getColorForWaypoint = index => [
+  'black',
+  'cornflowerblue',
+  'crimson',
+  'limegreen',
+  'darkorange',
+  'gold',
+  'hotpink',
+][Math.min(index, 6)]

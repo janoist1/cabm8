@@ -1,3 +1,10 @@
+import { calculateDistance, lookupCoordinate } from '../lib'
+import {
+  getSelectedWaypointIndex,
+  getSelectedWaypoint,
+  isDirectionsVisible,
+  isDirectionsEditing,
+} from '../selectors/directions'
 import {
   SET_POSITION,
   SET_REGION,
@@ -35,51 +42,45 @@ export const goToMyPosition = () => (dispatch, getState) =>
 export const changeRegion = region => (dispatch, getState) => {
   dispatch(setRegion(region))
 
+  const state = getState()
   const coordinate = {
     latitude: region.latitude,
     longitude: region.longitude,
   }
-  const { visible, editing, selectedWaypointIndex, waypoints } = getState().directions
-  const selectedWaypoint = waypoints[selectedWaypointIndex]
-  const lookupCoordinate = coordinate =>
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}`)
-      .then(response => response.json())
-  const toFixed = n => n.toFixed(5) * 1
+  const selectedWaypoint = getSelectedWaypoint(state)
 
-  // todo: wrap into fn
-  if (visible && selectedWaypoint &&
-    toFixed(selectedWaypoint.coordinate.latitude) === toFixed(coordinate.latitude) &&
-    toFixed(selectedWaypoint.coordinate.longitude) === toFixed(coordinate.longitude)) {
-    return
-  }
+  if (isDirectionsVisible(state)) {
+    if (selectedWaypoint && calculateDistance(selectedWaypoint.coordinate, coordinate) === 0) {
+      // switching waypoints - so that we've already looked up the coords
+      return
+    }
 
-  if (visible && !editing) {
-    return
+    if (!isDirectionsEditing(state)) {
+      return
+    }
   }
 
   lookupCoordinate(coordinate)
-    .then(json => {
-      if (json.error_message) {
-        throw Error(json.error_message)
+    .then(data => {
+      if (data.error_message) {
+        throw Error(data.error_message)
       }
 
-      if (!json.results.length) {
-        return
+      if (!data.results.length) {
+        throw Error('No result')
       }
 
-      const result = json.results[0]
+      const result = data.results[0]
       const address = result.formatted_address
 
       dispatch(setAddress(address))
 
-      if (visible) {
-        dispatch([
-          directions.invalidatePolylines(selectedWaypointIndex),
-          directions.updateWaypoint(selectedWaypointIndex, {
-            address,
-            coordinate,
-          }),
-        ])
+      if (isDirectionsVisible()) {
+        dispatch(directions.updateWaypoint(getSelectedWaypointIndex(state), {
+          address,
+          coordinate,
+          polyline: [], // makes shouldDirectionsUpdate to return true
+        }))
       }
     })
 }

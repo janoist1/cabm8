@@ -6,7 +6,6 @@ import {
   DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
   DIRECTIONS_RESET_WAYPOINTS,
   DIRECTIONS_SET_EDITING,
-  DIRECTIONS_INVALIDATE_POLYLINES,
 } from '../constants/directions'
 
 const initialState = {
@@ -51,13 +50,6 @@ const ACTION_HANDLERS = {
   [DIRECTIONS_SET_EDITING]: (state, action) => ({
     ...state,
     editing: action.payload,
-  }),
-  [DIRECTIONS_INVALIDATE_POLYLINES]: (state, action) => ({
-    ...state,
-    waypoints: state.waypoints.map((waypoint, index) => ({
-      ...waypoint,
-      ...(index >= action.payload ? { polyline: undefined } : {}),
-    })),
   }),
 }
 
