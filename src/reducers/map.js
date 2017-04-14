@@ -8,10 +8,8 @@ import {
   MAP_CHANGE_REGION,
   MAP_ADD_POLYLINE,
   MAP_UPDATE_POLYLINE,
-  MAP_REMOVE_POLYLINE,
   MAP_SET_POLYLINES,
 } from '../constants/map'
-
 
 const { width, height } = Dimensions.get('window')
 const ASPECT_RATIO = width / height
@@ -52,12 +50,12 @@ const ACTION_HANDLERS = {
   [MAP_UPDATE_MARKER]: (state, action) => ({
     ...state,
     markers: state.markers.map(marker =>
-      marker.identifier === action.payload.identifier ?
-        {
+      marker.identifier === action.payload.identifier
+        ? {
           ...marker,
           ...action.payload,
-        } :
-        marker
+        }
+        : marker
     ),
   }),
   [MAP_REMOVE_MARKER]: (state, action) => ({
@@ -78,12 +76,12 @@ const ACTION_HANDLERS = {
   [MAP_UPDATE_POLYLINE]: (state, action) => ({
     ...state,
     polylines: state.polylines.map((polyline, index) =>
-      index === action.payload.index ?
-        {
+      index === action.payload.index
+        ? {
           ...polyline,
           ...action.payload.polyline,
-        } :
-        polyline
+        }
+        : polyline
     ),
   }),
   [MAP_SET_POLYLINES]: (state, action) => ({

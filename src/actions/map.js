@@ -7,7 +7,6 @@ import {
   MAP_REMOVE_ALL_MARKERS,
   MAP_ADD_POLYLINE,
   MAP_UPDATE_POLYLINE,
-  MAP_REMOVE_POLYLINE,
   MAP_SET_POLYLINES,
 } from '../constants/map'
 
@@ -21,7 +20,7 @@ export const changeRegion = region => ({
   payload: region,
 })
 
-export const addMarker = ({identifier, ...marker}) => ({
+export const addMarker = ({ identifier, ...marker }) => ({
   type: MAP_ADD_MARKER,
   payload: {
     identifier,
@@ -29,7 +28,7 @@ export const addMarker = ({identifier, ...marker}) => ({
   },
 })
 
-export const updateMarker = ({identifier, ...marker}) => ({
+export const updateMarker = ({ identifier, ...marker }) => ({
   type: MAP_UPDATE_MARKER,
   payload: {
     identifier,
@@ -44,7 +43,7 @@ export const updateMarker = ({identifier, ...marker}) => ({
 //   dispatch((hasMarker() ? updateMarker : addMarker)(marker))
 // }
 
-export const removeMarker = ({identifier}) => ({
+export const removeMarker = ({ identifier }) => ({
   type: MAP_REMOVE_MARKER,
   payload: {
     identifier,

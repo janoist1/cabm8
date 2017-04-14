@@ -5,7 +5,6 @@ import {
   SET_ADDRESS,
 } from '../constants/main'
 
-
 const { width, height } = Dimensions.get('window')
 const ASPECT_RATIO = width / height
 const LATITUDE = 47.498247

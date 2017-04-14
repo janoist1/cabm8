@@ -1,13 +1,12 @@
-import React, { Component } from 'react'
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native'
-
+import React from 'react'
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
 
 class Waypoint extends React.Component {
   static propTypes = {
     index: React.PropTypes.number.isRequired,
     editing: React.PropTypes.bool.isRequired,
     waypoint: React.PropTypes.object.isRequired,
-    style: React.PropTypes.any.isRequired,
+    style: React.PropTypes.any,
     onSubmitAddress: React.PropTypes.func.isRequired,
     onSubmitFare: React.PropTypes.func.isRequired,
     onSubmitPassengers: React.PropTypes.func.isRequired,
@@ -20,12 +19,20 @@ class Waypoint extends React.Component {
     passengers: '',
   }
 
+  constructor (props) {
+    super(props)
+
+    this.setAddress = this.setAddress.bind(this)
+    this.setFare = this.setFare.bind(this)
+    this.setPassengers = this.setPassengers.bind(this)
+  }
+
   componentWillReceiveProps (nextProps) {
     const { address, fare } = nextProps.waypoint
 
     this.setState(state => ({
       address,
-      fare
+      fare,
     }))
   }
 
@@ -41,12 +48,12 @@ class Waypoint extends React.Component {
           </View>
         </View>
 
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <View style={styles.addressContainer}>
             <TextInput
               style={styles.addressInput}
               value={address}
-              onChangeText={this.setAddress.bind(this)}
+              onChangeText={this.setAddress}
               onSubmitEditing={() => onSubmitAddress(this.state.address)}
               onFocus={() => this.setAddressEditing(true)}
               onBlur={() => this.setAddressEditing(false)}
@@ -76,7 +83,6 @@ class Waypoint extends React.Component {
   }
 
   renderEditing () {
-
     return (
       <View style={styles.fareContainer}>
         <Text style={styles.label}>Number of passengers getting off:</Text>
@@ -102,8 +108,6 @@ class Waypoint extends React.Component {
 
         <Text style={styles.label}>Fare per passenger at this stop:</Text>
         <Text style={[styles.value]}>{waypoint.farePerPassenger}</Text>
-
-        {/*<Text style={style.total}>Fare per each passenger at this stop: <Text style={styles.totalValue}>1234</Text></Text>*/}
       </View>
     )
   }
@@ -116,8 +120,8 @@ class Waypoint extends React.Component {
       <TextInput
         style={[styles.value, styles.fare]}
         keyboardType='numeric'
-        value={fare + ""}
-        onChangeText={this.setFare.bind(this)}
+        value={fare + ''}
+        onChangeText={this.setFare}
         onSubmitEditing={() => onSubmitFare(this.state.fare)}
       />
     )
@@ -132,8 +136,8 @@ class Waypoint extends React.Component {
         style={[styles.value, styles.passengers]}
         editable={editing}
         keyboardType='numeric'
-        value={passengers + ""}
-        onChangeText={this.setPassengers.bind(this)}
+        value={passengers + ''}
+        onChangeText={this.setPassengers}
         onSubmitEditing={() => onSubmitPassengers(this.state.passengers)}
       />
     )

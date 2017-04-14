@@ -3,7 +3,6 @@ import { connect, Provider } from 'react-redux'
 import { Router } from 'react-native-router-flux'
 import * as main from '../actions/main'
 
-
 const RouterWithRedux = connect()(Router)
 
 class App extends Component {
@@ -12,9 +11,9 @@ class App extends Component {
     store: PropTypes.object.isRequired,
   }
 
-  componentDidMount() { // TODO: move it to a better place
+  componentDidMount () { // TODO: move it to a better place
     const { dispatch } = this.props.store
-    const watchID = navigator.geolocation.watchPosition(
+    const watchID = navigator.geolocation.watchPosition( // eslint-disable-line no-unused-vars
       position => {
         dispatch(main.setPosition({
           latitude: position.coords.latitude,
@@ -31,16 +30,16 @@ class App extends Component {
     // navigator.geolocation.clearWatch(this.watchID)
   }
 
-  shouldComponentUpdate() {
+  shouldComponentUpdate () {
     return false
   }
 
-  render() {
-    const {scenes, store} = this.props
+  render () {
+    const { scenes, store } = this.props
 
     return (
       <Provider store={store}>
-        <RouterWithRedux scenes={scenes}/>
+        <RouterWithRedux scenes={scenes} />
       </Provider>
     )
   }

@@ -1,8 +1,7 @@
 import React from 'react'
-import { Dimensions, View, Text, Button, StyleSheet } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import MapView from 'react-native-maps'
 import Pin from '../Pin'
-
 
 export const Map = props => (
   <View style={[styles.container, props.style]}>
@@ -16,7 +15,7 @@ export const Map = props => (
           coordinate={marker.coordinate}
           title={marker.title}
           description={marker.description}
-          anchor={{x: 0.5, y: 0.5}}
+          anchor={{ x: 0.5, y: 0.5 }}
           key={i}
         >
           <Pin key={i} color={marker.color} />
@@ -33,9 +32,11 @@ export const Map = props => (
 )
 
 Map.propTypes = {
+  children: React.PropTypes.any,
   region: React.PropTypes.object.isRequired,
   markers: React.PropTypes.array.isRequired,
   polylines: React.PropTypes.array.isRequired,
+  style: React.PropTypes.any,
   onRegionChangeComplete: React.PropTypes.func,
 }
 

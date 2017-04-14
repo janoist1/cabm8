@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
-import { Animated, Easing, View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native'
+import { Animated, View, StyleSheet } from 'react-native'
 import { MAX_WAYPOINTS } from '../../constants/main'
 import CircleButton from '../CircleButton'
 import ViewPager from '../ViewPager'
 import Waypoint from './Waypoint'
-
 
 const CONTAINER_HEIGHT = 200
 
@@ -15,10 +14,9 @@ class Directions extends Component {
     waypoints: React.PropTypes.array.isRequired,
     selectedWaypointIndex: React.PropTypes.number.isRequired,
     duration: React.PropTypes.number,
+    style: React.PropTypes.any,
     closeDirections: React.PropTypes.func.isRequired,
     addNextWaypoint: React.PropTypes.func.isRequired,
-    removeWaypoint: React.PropTypes.func.isRequired,
-    updateWaypoint: React.PropTypes.func.isRequired,
     submitWaypointAddress: React.PropTypes.func.isRequired,
     submitWaypointFare: React.PropTypes.func.isRequired,
     submitWaypointPassengers: React.PropTypes.func.isRequired,
@@ -30,7 +28,7 @@ class Directions extends Component {
   height = new Animated.Value(0)
   position = 'relative'
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps (nextProps) {
     if (nextProps.visible === this.props.visible) {
       return
     }
@@ -44,7 +42,7 @@ class Directions extends Component {
     }
   }
 
-  render() {
+  render () {
     return (
       <Animated.View style={[styles.container, this.props.style, { height: this.height, position: this.position }]}>
         <ViewPager
@@ -54,40 +52,40 @@ class Directions extends Component {
         >
           {this.props.waypoints.map((item, i) =>
             <Waypoint key={i}
-                      index={i}
-                      editing={this.props.editing}
-                      waypoint={item}
-                      style={styles.waypoint}
-                      onSubmitAddress={address => this.props.submitWaypointAddress(address)}
-                      onSubmitFare={fare => this.props.submitWaypointFare(fare)}
-                      onSubmitPassengers={passengers => this.props.submitWaypointPassengers(passengers)}
+              index={i}
+              editing={this.props.editing}
+              waypoint={item}
+              style={styles.waypoint}
+              onSubmitAddress={address => this.props.submitWaypointAddress(address)}
+              onSubmitFare={fare => this.props.submitWaypointFare(fare)}
+              onSubmitPassengers={passengers => this.props.submitWaypointPassengers(passengers)}
             />
           )}
         </ViewPager>
 
         <View style={styles.footer}>
-          <CircleButton style={styles.footerButton} title="👈" onPress={this.props.closeDirections} />
+          <CircleButton style={styles.footerButton} title='👈' onPress={this.props.closeDirections} />
           <CircleButton style={styles.footerButton}
-                        title="👍"
-                        onPress={() => this.props.finishEditing()}
-                        visible={this.props.editing && this.props.waypoints.length > 1}
+            title='👍'
+            onPress={() => this.props.finishEditing()}
+            visible={this.props.editing && this.props.waypoints.length > 1}
           />
           <CircleButton style={styles.footerButton}
-                        title="✍️"
-                        onPress={() => this.props.startEditing()}
-                        visible={!this.props.editing}
+            title='✍️'
+            onPress={() => this.props.startEditing()}
+            visible={!this.props.editing}
           />
           <CircleButton style={styles.footerButton}
-                        title="👉"
-                        onPress={() => this.props.addNextWaypoint()}
-                        visible={this.props.waypoints.length < MAX_WAYPOINTS}
+            title='👉'
+            onPress={() => this.props.addNextWaypoint()}
+            visible={this.props.waypoints.length < MAX_WAYPOINTS}
           />
         </View>
       </Animated.View>
     )
   }
 
-  __animate(prop, from, to, cb) {
+  __animate (prop, from, to, cb) {
     prop.setValue(from)
 
     return Animated.timing(
@@ -100,7 +98,7 @@ class Directions extends Component {
     ).start(cb)
   }
 
-  __show() {
+  __show () {
     this.position = 'absolute'
     this.__animate(this.height, 0, CONTAINER_HEIGHT, () => {
       this.position = 'relative'
@@ -108,7 +106,7 @@ class Directions extends Component {
     })
   }
 
-  __hide() {
+  __hide () {
     this.position = 'absolute'
     setTimeout(() => {
       this.__animate(this.height, CONTAINER_HEIGHT, 0, () => {

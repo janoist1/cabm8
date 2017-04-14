@@ -1,21 +1,10 @@
 import React, { Component } from 'react'
-import {
-  Dimensions,
-  View,
-  Text,
-  Image,
-  TextInput,
-  Button,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native'
-import { Actions } from 'react-native-router-flux'
+import { StyleSheet, View } from 'react-native'
 import Map from '../Map'
 import AddressBar from './AddressBar'
 import Crosshair from './Crosshair'
 import Directions from '../../containers/Directions'
 import Pin from '../Pin'
-
 
 export default class Main extends Component {
   static propTypes = {
@@ -30,7 +19,7 @@ export default class Main extends Component {
     map: React.PropTypes.object.isRequired,
   }
 
-  render() {
+  render () {
     return (
       <View style={styles.container}>
         <Map style={styles.map} {...this.props.map} onRegionChangeComplete={this.props.changeRegion}>
@@ -41,8 +30,8 @@ export default class Main extends Component {
           />
 
           <Crosshair style={styles.crosshair}
-                     visible={this.props.crosshairVisible}
-                     onPress={this.props.goToMyPosition}
+            visible={this.props.crosshairVisible}
+            onPress={this.props.goToMyPosition}
           />
         </Map>
 

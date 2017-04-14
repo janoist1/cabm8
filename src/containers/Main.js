@@ -7,7 +7,6 @@ import {
 } from '../actions/main'
 import Main from '../components/Main'
 
-
 const toFixed = n => n.toFixed(5) * 1
 const getPosition = state => state.main.position
 const getRegion = state => state.main.region

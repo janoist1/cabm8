@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { applyMiddleware, compose, createStore } from 'redux'
 import thunk from 'redux-thunk'
 import multi from 'redux-multi'
@@ -16,6 +17,7 @@ export default (initialState = {}) => {
   // ======================================================
   const enhancers = [devToolsEnhancer()]
 
+  // todo: environment specific compose
   // let composeEnhancers = compose
   let composeEnhancers = composeWithDevTools({})
 

@@ -9,7 +9,6 @@ import {
   DIRECTIONS_INVALIDATE_POLYLINES,
 } from '../constants/directions'
 
-
 const initialState = {
   visible: false,
   editing: false,

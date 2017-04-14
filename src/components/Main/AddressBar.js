@@ -1,6 +1,5 @@
-import React, { Component } from 'react'
-import { Animated, Easing, View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native'
-
+import React from 'react'
+import { Animated, Text, StyleSheet, TouchableOpacity } from 'react-native'
 
 class AddressBar extends React.Component {
   static propTypes = {
@@ -8,12 +7,12 @@ class AddressBar extends React.Component {
     visible: React.PropTypes.bool.isRequired,
     duration: React.PropTypes.number,
     onPress: React.PropTypes.func.isRequired,
-    style: React.PropTypes.any.isRequired,
+    style: React.PropTypes.any,
   }
 
   top = new Animated.Value(15)
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps (nextProps) {
     if (nextProps.visible === this.props.visible) {
       return
     }
@@ -39,7 +38,7 @@ class AddressBar extends React.Component {
     )
   }
 
-  __animate(prop, from, to, cb) {
+  __animate (prop, from, to, cb) {
     prop.setValue(from)
 
     return Animated.timing(
@@ -52,11 +51,11 @@ class AddressBar extends React.Component {
     ).start(cb)
   }
 
-  __show() {
+  __show () {
     this.__animate(this.top, -40, 15)
   }
 
-  __hide() {
+  __hide () {
     this.__animate(this.top, 15, -40)
   }
 }

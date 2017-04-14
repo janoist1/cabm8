@@ -2,6 +2,7 @@ import {
   DIRECTIONS_SHOW,
   DIRECTIONS_HIDE,
   DIRECTIONS_ADD_WAYPOINT,
+  DIRECTIONS_REMOVE_WAYPOINT,
   DIRECTIONS_UPDATE_WAYPOINT,
   DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
   DIRECTIONS_RESET_WAYPOINTS,
@@ -9,7 +10,6 @@ import {
   DIRECTIONS_INVALIDATE_POLYLINES,
 } from '../constants/directions'
 import * as main from './main'
-
 
 const defaultWaypoint = {
   address: '',
@@ -35,7 +35,7 @@ export const invalidatePolylines = (index = 0) => ({
   payload: index,
 })
 
-export const openDirections = ({address, coordinate}) => [
+export const openDirections = ({ address, coordinate }) => [
   createWaypoint({
     ...defaultWaypoint,
     address,
@@ -108,7 +108,7 @@ export const selectWaypoint = index => (dispatch, getState) => {
   }
 }
 
-export const createWaypoint = (waypoint = {...defaultWaypoint}) => (dispatch, getState) => {
+export const createWaypoint = (waypoint = { ...defaultWaypoint }) => (dispatch, getState) => {
   let directions = getState().directions
 
   if (!waypoint.coordinate && directions.waypoints.length) {
@@ -169,7 +169,7 @@ export const submitWaypointAddress = address => (dispatch, getState) => {
     dispatch(startEditing())
   }
 
-  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}`) //&key=${key}
+  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}`) // &key=${key}
     .then(response => response.json())
     .then(json => {
       if (!json.results.length) {
@@ -179,7 +179,7 @@ export const submitWaypointAddress = address => (dispatch, getState) => {
       const result = json.results[0]
       const latitude = result.geometry.location.lat
       const longitude = result.geometry.location.lng
-      const coordinate = {latitude, longitude}
+      const coordinate = { latitude, longitude }
 
       dispatch([
         updateWaypoint(selectedWaypointIndex, {
@@ -224,7 +224,7 @@ export const getDirections = () => (dispatch, getState) => {
     const coordinatesToString = coordinates => coordinates.map(coordinateToString).join('|')
 
     if (waypoints.length < 2) {
-      return Promise.reject()
+      return Promise.reject(Error('Not enough waypoints'))
     }
 
     let url = `https://maps.googleapis.com/maps/api/directions/json`
@@ -252,7 +252,7 @@ export const getDirections = () => (dispatch, getState) => {
       .then(response => response.json())
       .then(json => {
         if (!json.routes.length) {
-          console.log({url, json})
+          console.log({ url, json })
           throw Error('No route found')
         }
 
@@ -304,8 +304,7 @@ export const getDirections = () => (dispatch, getState) => {
   })()
 }
 
-
-function getColorForWaypoint(index) {
+function getColorForWaypoint (index) {
   return [
     'black',
     'cornflowerblue',
@@ -317,16 +316,21 @@ function getColorForWaypoint(index) {
   ][index]
 }
 
-function decodePolyline(encoded) {
+function decodePolyline (encoded) {
   if (!encoded) {
     return []
   }
+
   const poly = []
-  let index = 0, len = encoded.length
-  let lat = 0, lng = 0
+  let index = 0
+  let len = encoded.length
+  let lat = 0
+  let lng = 0
 
   while (index < len) {
-    let b, shift = 0, result = 0
+    let b
+    let shift = 0
+    let result = 0
 
     do {
       b = encoded.charCodeAt(index++) - 63
@@ -334,7 +338,7 @@ function decodePolyline(encoded) {
       shift += 5
     } while (b >= 0x20)
 
-    let dlat = (result & 1) != 0 ? ~(result >> 1) : (result >> 1)
+    let dlat = (result & 1) !== 0 ? ~(result >> 1) : (result >> 1)
     lat += dlat
 
     shift = 0
@@ -346,7 +350,7 @@ function decodePolyline(encoded) {
       shift += 5
     } while (b >= 0x20)
 
-    let dlng = (result & 1) != 0 ? ~(result >> 1) : (result >> 1)
+    let dlng = (result & 1) !== 0 ? ~(result >> 1) : (result >> 1)
     lng += dlng
 
     let p = {

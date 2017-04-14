@@ -5,7 +5,6 @@ import {
 } from '../constants/main'
 import * as directions from './directions'
 
-
 export const setPosition = position => ({
   type: SET_POSITION,
   payload: position,
@@ -43,7 +42,7 @@ export const changeRegion = region => (dispatch, getState) => {
   const { visible, editing, selectedWaypointIndex, waypoints } = getState().directions
   const selectedWaypoint = waypoints[selectedWaypointIndex]
   const lookupCoordinate = coordinate =>
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}`) //&key=${key}
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}`)
       .then(response => response.json())
   const toFixed = n => n.toFixed(5) * 1
 

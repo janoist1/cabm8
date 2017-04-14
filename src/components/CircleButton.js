@@ -1,8 +1,7 @@
-import React, { Component } from 'react'
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native'
+import React from 'react'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 
-
-export const CircleButton = ({title, visible = true, onPress, style}) => (
+export const CircleButton = ({ title, visible = true, onPress, style }) => (
   visible &&
   <View style={[...style, ...styles.container]}>
     <TouchableOpacity style={styles.view} onPress={onPress}>

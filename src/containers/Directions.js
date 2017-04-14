@@ -13,7 +13,6 @@ import {
 } from '../actions/directions'
 import Directions from '../components/Directions'
 
-
 const getWaypointsWithProportionalFare = state => {
   const { waypoints } = state.directions
 
