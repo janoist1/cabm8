@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import { connect, Provider } from 'react-redux'
 import { Router } from 'react-native-router-flux'
-import * as main from '../actions/main'
+import * as main from '../modules/main'
 
 const RouterWithRedux = connect()(Router)
 

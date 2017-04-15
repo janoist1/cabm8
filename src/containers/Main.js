@@ -11,7 +11,7 @@ import {
   changeRegion,
   goToMyPosition,
   openDirections,
-} from '../actions/main'
+} from '../modules/main'
 import Main from '../components/Main'
 
 const mapStateToProps = state => ({

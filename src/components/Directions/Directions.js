@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Animated, View, StyleSheet } from 'react-native'
-import { MAX_WAYPOINTS } from '../../constants/main'
+import { MAX_WAYPOINTS } from '../../modules/directions'
 import CircleButton from '../CircleButton'
 import ViewPager from '../ViewPager'
 import Waypoint from './Waypoint'

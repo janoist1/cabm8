@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
-import main from '../reducers/main'
-import directions from '../reducers/directions'
+import main from '../modules/main'
+import directions from '../modules/directions'
 
 export const makeRootReducer = asyncReducers =>
   combineReducers({

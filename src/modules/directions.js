@@ -1,14 +1,4 @@
 import { decodePolyline, geocodeAddress, getDirections } from '../lib'
-import {
-  DIRECTIONS_SHOW,
-  DIRECTIONS_HIDE,
-  DIRECTIONS_ADD_WAYPOINT,
-  DIRECTIONS_REMOVE_WAYPOINT,
-  DIRECTIONS_UPDATE_WAYPOINT,
-  DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
-  DIRECTIONS_RESET_WAYPOINTS,
-  DIRECTIONS_SET_EDITING,
-} from '../constants/directions'
 import * as main from './main'
 
 const defaultWaypoint = {
@@ -22,12 +12,35 @@ const defaultWaypoint = {
   visible: false,
 }
 
+// todo: should go to config
+export const colors = [
+  'black',
+  'cornflowerblue',
+  'crimson',
+  'limegreen',
+  'darkorange',
+  'gold',
+  'hotpink',
+]
+export const MAX_WAYPOINTS = colors.length
+
+// actions
+const SHOW_DIRECTIONS = 'cabm8/directions/SHOW_DIRECTIONS'
+const HIDE_DIRECTIONS = 'cabm8/directions/HIDE_DIRECTIONS'
+const ADD_WAYPOINT = 'cabm8/directions/ADD_WAYPOINT'
+const UPDATE_WAYPOINT = 'cabm8/directions/UPDATE_WAYPOINT'
+const SET_SELECTED_WAYPOINT_INDEX = 'cabm8/directions/SET_SELECTED_WAYPOINT_INDEX'
+const REMOVE_WAYPOINT = 'cabm8/directions/REMOVE_WAYPOINT'
+const RESET_WAYPOINTS = 'cabm8/directions/RESET'
+const SET_EDITING = 'cabm8/directions/SET_EDITING'
+
+// action creators
 export const showDirections = () => ({
-  type: DIRECTIONS_SHOW,
+  type: SHOW_DIRECTIONS,
 })
 
 export const hideDirections = () => ({
-  type: DIRECTIONS_HIDE,
+  type: HIDE_DIRECTIONS,
 })
 
 export const openDirections = ({ address, coordinate }) => [
@@ -63,12 +76,12 @@ export const finishEditing = () => (dispatch, getState) => {
 }
 
 export const addWaypoint = waypoint => ({
-  type: DIRECTIONS_ADD_WAYPOINT,
+  type: ADD_WAYPOINT,
   payload: waypoint,
 })
 
 export const updateWaypoint = (index, waypoint) => ({
-  type: DIRECTIONS_UPDATE_WAYPOINT,
+  type: UPDATE_WAYPOINT,
   payload: {
     index,
     waypoint,
@@ -76,7 +89,7 @@ export const updateWaypoint = (index, waypoint) => ({
 })
 
 export const setSelectedWaypointIndex = index => ({
-  type: DIRECTIONS_SET_SELECTED_WAYPOINT_INDEX,
+  type: SET_SELECTED_WAYPOINT_INDEX,
   payload: index,
 })
 
@@ -102,6 +115,7 @@ export const selectWaypoint = index => (dispatch, getState) => {
 }
 
 export const createWaypoint = (waypoint = { ...defaultWaypoint }) => (dispatch, getState) => {
+  const getColorForWaypoint = index => colors[Math.min(index, MAX_WAYPOINTS - 1)]
   let directions = getState().directions
 
   if (!waypoint.coordinate && directions.waypoints.length) {
@@ -137,16 +151,16 @@ export const addNextWaypoint = () => (dispatch, getState) => {
 }
 
 export const removeWaypoint = index => ({
-  type: DIRECTIONS_REMOVE_WAYPOINT,
+  type: REMOVE_WAYPOINT,
   payload: index,
 })
 
 export const resetWaypoints = () => ({
-  type: DIRECTIONS_RESET_WAYPOINTS,
+  type: RESET_WAYPOINTS,
 })
 
 export const setEditing = editing => ({
-  type: DIRECTIONS_SET_EDITING,
+  type: SET_EDITING,
   payload: editing,
 })
 
@@ -245,12 +259,54 @@ export const updateDirections = () => (dispatch, getState) => {
     })
 }
 
-const getColorForWaypoint = index => [
-  'black',
-  'cornflowerblue',
-  'crimson',
-  'limegreen',
-  'darkorange',
-  'gold',
-  'hotpink',
-][Math.min(index, 6)]
+// reducer
+const initialState = {
+  visible: false,
+  editing: false,
+  waypoints: [],
+  selectedWaypointIndex: 0,
+}
+
+const ACTION_HANDLERS = {
+  [SHOW_DIRECTIONS]: (state, action) => ({
+    ...state,
+    visible: true,
+  }),
+  [HIDE_DIRECTIONS]: (state, action) => ({
+    ...state,
+    visible: false,
+  }),
+  [ADD_WAYPOINT]: (state, action) => ({
+    ...state,
+    waypoints: [
+      ...state.waypoints,
+      action.payload,
+    ],
+  }),
+  [UPDATE_WAYPOINT]: (state, action) => ({
+    ...state,
+    waypoints: state.waypoints.map((item, i) => i !== action.payload.index ? item : {
+      ...item,
+      ...action.payload.waypoint,
+    }),
+  }),
+  [SET_SELECTED_WAYPOINT_INDEX]: (state, action) => ({
+    ...state,
+    selectedWaypointIndex: action.payload,
+  }),
+  [RESET_WAYPOINTS]: (state, action) => ({
+    ...state,
+    waypoints: [],
+    selectedWaypointIndex: 0,
+  }),
+  [SET_EDITING]: (state, action) => ({
+    ...state,
+    editing: action.payload,
+  }),
+}
+
+export default (state = initialState, action) => {
+  const handler = ACTION_HANDLERS[action.type]
+
+  return handler ? handler(state, action) : state
+}

@@ -10,7 +10,7 @@ import {
   selectWaypoint,
   finishEditing,
   startEditing,
-} from '../actions/directions'
+} from '../modules/directions'
 import Directions from '../components/Directions'
 
 const getWaypointsWithProportionalFare = state => {

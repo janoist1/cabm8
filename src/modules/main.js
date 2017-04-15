@@ -1,3 +1,4 @@
+import { Dimensions } from 'react-native'
 import { calculateDistance, lookupCoordinate } from '../lib'
 import {
   getSelectedWaypointIndex,
@@ -5,13 +6,14 @@ import {
   isDirectionsVisible,
   isDirectionsEditing,
 } from '../selectors/directions'
-import {
-  SET_POSITION,
-  SET_REGION,
-  SET_ADDRESS,
-} from '../constants/main'
 import * as directions from './directions'
 
+// actions
+const SET_POSITION = 'cabm8/main/SET_POSITION'
+const SET_REGION = 'cabm8/main/SET_REGION'
+const SET_ADDRESS = 'cabm8/main/SET_ADDRESS'
+
+// action creators
 export const setPosition = position => ({
   type: SET_POSITION,
   payload: position,
@@ -34,10 +36,10 @@ export const goToCoordinate = coordinate => (dispatch, getState) =>
   }))
 
 export const goToMyPosition = () => (dispatch, getState) =>
-  getState().main.position && dispatch(goToCoordinate({
-    latitude: getState().main.position.latitude,
-    longitude: getState().main.position.longitude,
-  }))
+getState().main.position && dispatch(goToCoordinate({
+  latitude: getState().main.position.latitude,
+  longitude: getState().main.position.longitude,
+}))
 
 export const changeRegion = region => (dispatch, getState) => {
   dispatch(setRegion(region))
@@ -75,7 +77,7 @@ export const changeRegion = region => (dispatch, getState) => {
 
       dispatch(setAddress(address))
 
-      if (isDirectionsVisible()) {
+      if (isDirectionsVisible(state)) {
         dispatch(directions.updateWaypoint(getSelectedWaypointIndex(state), {
           address,
           coordinate,
@@ -95,4 +97,43 @@ export const openDirections = () => (dispatch, getState) => {
       longitude: main.region.longitude,
     },
   }))
+}
+
+// reducer
+const { width, height } = Dimensions.get('window')
+const ASPECT_RATIO = width / height
+const LATITUDE = 47.498247
+const LONGITUDE = 19.032445
+const LATITUDE_DELTA = 0.01
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
+const initialState = {
+  address: 'Budapest',
+  position: null,
+  region: {
+    latitude: LATITUDE,
+    longitude: LONGITUDE,
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
+  },
+}
+
+const ACTION_HANDLERS = {
+  [SET_POSITION]: (state, action) => ({
+    ...state,
+    position: action.payload,
+  }),
+  [SET_REGION]: (state, action) => ({
+    ...state,
+    region: action.payload,
+  }),
+  [SET_ADDRESS]: (state, action) => ({
+    ...state,
+    address: action.payload,
+  }),
+}
+
+export default (state = initialState, action) => {
+  const handler = ACTION_HANDLERS[action.type]
+
+  return handler ? handler(state, action) : state
 }
