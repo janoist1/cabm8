@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { Animated, View, StyleSheet } from 'react-native'
-import { MAX_WAYPOINTS } from '../../modules/directions'
 import CircleButton from '../CircleButton'
 import ViewPager from '../ViewPager'
 import Waypoint from './Waypoint'
@@ -43,6 +42,7 @@ class Directions extends Component {
   }
 
   render () {
+    // todo: refactor / spread props
     return (
       <Animated.View style={[styles.container, this.props.style, { height: this.height, position: this.position }]}>
         <ViewPager
@@ -53,6 +53,7 @@ class Directions extends Component {
           {this.props.waypoints.map((item, i) =>
             <Waypoint key={i}
               index={i}
+              active={this.props.selectedWaypointIndex === i}
               editing={this.props.editing}
               waypoint={item}
               style={styles.waypoint}

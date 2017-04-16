@@ -1,9 +1,12 @@
 import React from 'react'
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, Picker, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
+import { generateNumbers } from '../../lib'
+import styles_ from './styles'
 import Config from 'react-native-config'
 
 class Waypoint extends React.Component {
   static propTypes = {
+    active: React.PropTypes.bool.isRequired,
     index: React.PropTypes.number.isRequired,
     editing: React.PropTypes.bool.isRequired,
     waypoint: React.PropTypes.object.isRequired,
@@ -17,18 +20,30 @@ class Waypoint extends React.Component {
     address: '',
     addressEditing: false,
     fare: 0,
-    passengers: '',
   }
+
+  // this is a workaround for an issue with Picker.onValueChange
+  // need to avoid onValueChange to get fired when re-rendering
+  // more: https://github.com/facebook/react-native/issues/12520
+  _pickerWorkaroundFlag1: false // becomes true if we have just swiped to this waypoint
+  _pickerWorkaroundFlag2: false // becomes true if remainingPassengers has changed
 
   constructor (props) {
     super(props)
 
     this.setAddress = this.setAddress.bind(this)
     this.setFare = this.setFare.bind(this)
-    this.setPassengers = this.setPassengers.bind(this)
+  }
+
+  shouldComponentUpdate (nextProps) {
+    return nextProps.active
   }
 
   componentWillReceiveProps (nextProps) {
+    this._pickerWorkaroundFlag1 = this._pickerWorkaroundFlag1 || (!this.props.active && nextProps.active)
+    this._pickerWorkaroundFlag2 = this._pickerWorkaroundFlag2 ||
+      (nextProps.waypoint.remainingPassengers !== this.props.waypoint.remainingPassengers)
+
     const { address, fare } = nextProps.waypoint
 
     this.setState(state => ({
@@ -78,7 +93,7 @@ class Waypoint extends React.Component {
     return (
       <View style={styles.fareContainer}>
         <Text style={styles.label}>Number of passengers travelling:</Text>
-        {this.renderPassengersInput()}
+        {this.renderPassengersInput(Config.MAX_PASSENGERS)}
       </View>
     )
   }
@@ -87,7 +102,7 @@ class Waypoint extends React.Component {
     return (
       <View style={styles.fareContainer}>
         <Text style={styles.label}>Number of passengers getting off:</Text>
-        {this.renderPassengersInput()}
+        {this.renderPassengersInput(this.props.waypoint.remainingPassengers)}
 
         <Text style={styles.label}>Fare on the taxi meter:</Text>
         {this.renderFareInput()}
@@ -128,19 +143,32 @@ class Waypoint extends React.Component {
     )
   }
 
-  renderPassengersInput () {
-    const { editing, onSubmitPassengers } = this.props
-    const { passengers } = this.state
+  renderPassengersInput (maxPassengers) {
+    const { editing, onSubmitPassengers, waypoint: { passengers } } = this.props
+
+    const applyPickerWorkaround = () => {
+      let flag = this._pickerWorkaroundFlag1 && this._pickerWorkaroundFlag2
+
+      this._pickerWorkaroundFlag1 = false
+      this._pickerWorkaroundFlag2 = false
+
+      return flag
+    }
 
     return (
-      <TextInput
-        style={[styles.value, styles.passengers]}
-        editable={editing}
-        keyboardType='numeric'
-        value={passengers + ''}
-        onChangeText={this.setPassengers}
-        onSubmitEditing={() => onSubmitPassengers(this.state.passengers)}
-      />
+      <View style={styles_.passengers.container}>
+        <Text style={[styles.value, styles_.passengers.value]}>{passengers}</Text>
+
+        {editing && <Picker
+          style={styles_.passengers.picker}
+          selectedValue={passengers}
+          mode={Picker.MODE_DROPDOWN}
+          onValueChange={value => applyPickerWorkaround() || onSubmitPassengers(value)}>
+          {generateNumbers(1, maxPassengers).map(i =>
+            <Picker.Item key={i} label={i + ''} value={i} />
+          )}
+        </Picker>}
+      </View>
     )
   }
 
@@ -159,12 +187,6 @@ class Waypoint extends React.Component {
   setFare (fare) {
     this.setState(state => ({
       fare: fare ? parseFloat(fare) : 0,
-    }))
-  }
-
-  setPassengers (passengers) {
-    this.setState(state => ({
-      passengers: passengers ? parseInt(passengers) : 0,
     }))
   }
 }
@@ -210,7 +232,6 @@ const styles = StyleSheet.create({
     width: '100%',
     flexWrap: 'wrap',
     flexDirection: 'row',
-    // justifyContent: 'space-between',
   },
   label: {
     textAlignVertical: 'center',
@@ -229,9 +250,6 @@ const styles = StyleSheet.create({
   },
   fare: {
     width: 50,
-  },
-  passengers: {
-    width: 26,
   },
   total: {
 

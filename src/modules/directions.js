@@ -8,7 +8,7 @@ const defaultWaypoint = {
   color: undefined,
   distance: 0,
   fare: 0,
-  passengers: 0,
+  passengers: 1,
   polyline: [],
   visible: false,
 }

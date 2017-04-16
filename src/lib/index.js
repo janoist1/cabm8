@@ -31,6 +31,12 @@ export const getDirections = coordinates => {
     })
 }
 
+export const generateNumbers = (N, M) => [...(function * () {
+  let i = M === undefined ? 0 : N
+  let max = M || N
+  while (i <= max) yield i++
+})()]
+
 export const calculateDistance = (coord1, coord2) => {
   const toRad = n => n * Math.PI / 180
   const R = 6371e3 // metres
