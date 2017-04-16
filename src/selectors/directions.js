@@ -6,9 +6,6 @@ export const isDirectionsEditing = state => state.directions.editing
 
 export const getWaypoints = state => state.directions.waypoints
 
-// fixme: a waypoint's visibility on the map isn't concern of directions
-export const getVisibleWaypoints = state => getWaypoints(state).filter(waypoint => waypoint.visible)
-
 export const getSelectedWaypoint = state => getWaypoints(state)[getSelectedWaypointIndex(state)]
 
 export const getSelectedWaypointIndex = state => state.directions.selectedWaypointIndex

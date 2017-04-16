@@ -5,7 +5,18 @@ export const getPosition = state => state.main.position
 
 export const getRegion = state => state.main.region
 
-export const getMarkers = createSelector(directions.getVisibleWaypoints, waypoints => waypoints.map(getMarker))
+export const getMarkerVisibilityFilter = state => ({
+  editing: directions.isDirectionsEditing(state),
+  selectedWaypointIndex: directions.getSelectedWaypointIndex(state),
+})
+
+export const getMarkers = createSelector(
+  [directions.getWaypoints, getMarkerVisibilityFilter],
+  (waypoints, waypointVisibilityFilter) => waypoints
+    .filter((waypoint, index) => !waypointVisibilityFilter.editing ||
+      index !== waypointVisibilityFilter.selectedWaypointIndex)
+    .map(getMarker)
+)
 
 export const getMarker = (waypoint, index) => ({
   identifier: index,

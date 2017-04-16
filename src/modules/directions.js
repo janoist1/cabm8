@@ -10,7 +10,6 @@ const defaultWaypoint = {
   fare: 0,
   passengers: 1,
   polyline: [],
-  visible: false,
 }
 const waypointColors = JSON.parse(Config.WAYPOINT_COLORS)
 
@@ -51,19 +50,13 @@ export const closeDirections = () => [
 export const startEditing = () => (dispatch, getState) =>
   dispatch([
     main.goToCoordinate(getState().directions.waypoints[getState().directions.selectedWaypointIndex].coordinate),
-    updateWaypoint(getState().directions.selectedWaypointIndex, { visible: false }),
     setEditing(true),
   ])
 
-export const finishEditing = () => (dispatch, getState) => {
-  const { selectedWaypointIndex } = getState().directions
-
-  dispatch([
-    updateWaypoint(selectedWaypointIndex, { visible: true }),
-    setEditing(false),
-    updateDirections(),
-  ])
-}
+export const finishEditing = () => [
+  setEditing(false),
+  updateDirections(),
+]
 
 export const addWaypoint = waypoint => ({
   type: ADD_WAYPOINT,
@@ -85,23 +78,15 @@ export const setSelectedWaypointIndex = index => ({
 
 export const selectWaypoint = index => (dispatch, getState) => {
   const { directions } = getState()
-  const { editing, selectedWaypointIndex, waypoints } = directions
+  const { editing, waypoints } = directions
 
   if (editing) {
-    dispatch([
-      updateWaypoint(selectedWaypointIndex, { visible: true }),
-      updateWaypoint(index, { visible: false }),
-      main.goToCoordinate(waypoints[index].coordinate),
-    ])
+    dispatch(main.goToCoordinate(waypoints[index].coordinate))
   }
 
   dispatch([
     setSelectedWaypointIndex(index),
   ])
-
-  if (!editing) {
-    dispatch(updateDirections()) // todo: review
-  }
 }
 
 export const createWaypoint = (waypoint = { ...defaultWaypoint }) => (dispatch, getState) => {
@@ -126,15 +111,9 @@ export const createWaypoint = (waypoint = { ...defaultWaypoint }) => (dispatch, 
 
 export const addNextWaypoint = () => (dispatch, getState) => {
   const { directions } = getState()
-  const { selectedWaypointIndex, waypoints } = directions
-  const selectedWaypoint = waypoints[selectedWaypointIndex]
 
   if (!directions.editing) {
     dispatch(startEditing())
-  }
-
-  if (!selectedWaypoint.visible) {
-    dispatch(updateWaypoint(selectedWaypointIndex, { visible: true }))
   }
 
   dispatch(createWaypoint())
