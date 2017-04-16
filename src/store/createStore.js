@@ -1,5 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { applyMiddleware, compose, createStore } from 'redux'
+import debounce from '../middlewares/debounce'
+import promise from 'redux-promise'
 import thunk from 'redux-thunk'
 import multi from 'redux-multi'
 import { composeWithDevTools } from 'redux-devtools-extension'
@@ -10,7 +12,7 @@ export default (initialState = {}) => {
   // ======================================================
   // Middleware Configuration
   // ======================================================
-  const middleware = [multi, thunk]
+  const middleware = [promise, debounce, thunk, multi]
 
   // ======================================================
   // Store Enhancers

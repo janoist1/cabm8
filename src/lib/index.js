@@ -1,4 +1,4 @@
-export const lookupCoordinate = coordinate =>
+export const geocodeCoordinate = coordinate =>
   fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}`)
     .then(response => response.json())
 
@@ -36,6 +36,9 @@ export const generateNumbers = (N, M) => [...(function * () {
   let max = M || N
   while (i <= max) yield i++
 })()]
+
+export const arraysEqual = (array1, array2) =>
+  array1.length === array2.length && array1.every((v, i) => v === array2[i])
 
 export const calculateDistance = (coord1, coord2) => {
   const toRad = n => n * Math.PI / 180
