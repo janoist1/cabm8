@@ -1,4 +1,4 @@
-export const lookupCoordinate = coordinate =>
+export const geocodeCoordinate = coordinate =>
   fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}`)
     .then(response => response.json())
 

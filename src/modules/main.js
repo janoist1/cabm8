@@ -1,5 +1,5 @@
 import { Dimensions } from 'react-native'
-import { calculateDistance, lookupCoordinate } from '../lib'
+import { calculateDistance, geocodeCoordinate } from '../lib'
 import {
   getSelectedWaypointIndex,
   getSelectedWaypoint,
@@ -41,14 +41,16 @@ getState().main.position && dispatch(goToCoordinate({
   longitude: getState().main.position.longitude,
 }))
 
-export const changeRegion = region => (dispatch, getState) => {
-  dispatch(setRegion(region))
-
-  const state = getState()
-  const coordinate = {
+export const changeRegion = region => [
+  setRegion(region),
+  lookupAddress({
     latitude: region.latitude,
     longitude: region.longitude,
-  }
+  }),
+]
+
+export const lookupAddress = coordinate => (dispatch, getState) => {
+  const state = getState()
   const selectedWaypoint = getSelectedWaypoint(state)
 
   if (isDirectionsVisible(state)) {
@@ -62,7 +64,7 @@ export const changeRegion = region => (dispatch, getState) => {
     }
   }
 
-  lookupCoordinate(coordinate)
+  geocodeCoordinate(coordinate)
     .then(data => {
       if (data.error_message) {
         throw Error(data.error_message)
