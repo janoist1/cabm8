@@ -11,6 +11,7 @@ class Directions extends Component {
     visible: React.PropTypes.bool.isRequired,
     editing: React.PropTypes.bool.isRequired,
     waypoints: React.PropTypes.array.isRequired,
+    canAddMoreWaypoints: React.PropTypes.bool.isRequired,
     selectedWaypointIndex: React.PropTypes.number.isRequired,
     duration: React.PropTypes.number,
     style: React.PropTypes.any,
@@ -69,7 +70,7 @@ class Directions extends Component {
           <CircleButton style={styles.footerButton}
             title='👍'
             onPress={() => this.props.finishEditing()}
-            visible={this.props.editing && this.props.waypoints.length > 1}
+            visible={!this.props.canAddMoreWaypoints && this.props.editing && this.props.waypoints.length > 1}
           />
           <CircleButton style={styles.footerButton}
             title='✍️'
@@ -79,7 +80,7 @@ class Directions extends Component {
           <CircleButton style={styles.footerButton}
             title='👉'
             onPress={() => this.props.addNextWaypoint()}
-            visible={this.props.waypoints.length < MAX_WAYPOINTS}
+            visible={this.props.canAddMoreWaypoints}
           />
         </View>
       </Animated.View>

@@ -13,12 +13,14 @@ import {
 } from '../modules/directions'
 import {
   getDisplayableWaypoints,
+  getCanAddMoreWaypoints,
 } from '../selectors/directions'
 import Directions from '../components/Directions'
 
 const mapStateToProps = state => ({
   ...state.directions,
   waypoints: getDisplayableWaypoints(state),
+  canAddMoreWaypoints: getCanAddMoreWaypoints(state),
 })
 
 const mapDispatchToProps = {

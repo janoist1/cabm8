@@ -59,3 +59,6 @@ export const getRemainingPassengers = waypoints => {
       .slice(1)
       .reduce((passengers, waypoint) => passengers - waypoint.passengers, totalNumberOfPassengers)
 }
+
+export const getCanAddMoreWaypoints = state => getWaypoints(state).length < 1 ||
+  (getWaypoints(state).length < Config.MAX_WAYPOINTS && getRemainingPassengers(getWaypoints(state)) > 0)
