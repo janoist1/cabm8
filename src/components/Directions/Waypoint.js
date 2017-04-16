@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
+import Config from 'react-native-config'
 
 class Waypoint extends React.Component {
   static propTypes = {

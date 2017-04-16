@@ -1,5 +1,6 @@
 import { decodePolyline, geocodeAddress, getDirections } from '../lib'
 import * as main from './main'
+import Config from 'react-native-config'
 
 const defaultWaypoint = {
   address: '',
@@ -11,18 +12,7 @@ const defaultWaypoint = {
   polyline: [],
   visible: false,
 }
-
-// todo: should go to config
-export const colors = [
-  'black',
-  'cornflowerblue',
-  'crimson',
-  'limegreen',
-  'darkorange',
-  'gold',
-  'hotpink',
-]
-export const MAX_WAYPOINTS = colors.length
+const waypointColors = JSON.parse(Config.WAYPOINT_COLORS)
 
 // actions
 const SHOW_DIRECTIONS = 'cabm8/directions/SHOW_DIRECTIONS'
@@ -115,7 +105,7 @@ export const selectWaypoint = index => (dispatch, getState) => {
 }
 
 export const createWaypoint = (waypoint = { ...defaultWaypoint }) => (dispatch, getState) => {
-  const getColorForWaypoint = index => colors[Math.min(index, MAX_WAYPOINTS - 1)]
+  const getColorForWaypoint = index => waypointColors[Math.min(index, Config.MAX_WAYPOINTS - 1)]
   let directions = getState().directions
 
   if (!waypoint.coordinate && directions.waypoints.length) {
@@ -212,10 +202,6 @@ export const submitWaypointFare = fare => (dispatch, getState) => {
 export const submitWaypointPassengers = passengers => (dispatch, getState) => {
   const { directions } = getState()
   const { selectedWaypointIndex } = directions
-
-  if (passengers < 1 || passengers > 6) {
-    return
-  }
 
   if (directions.waypoints[selectedWaypointIndex].passengers === passengers) {
     return
