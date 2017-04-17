@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, Picker, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, Picker, TextInput, TouchableOpacity } from 'react-native'
 import { generateNumbers } from '../../lib'
 import { waypoint as styles } from './styles'
 import Config from 'react-native-config'

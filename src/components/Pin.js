@@ -1,5 +1,6 @@
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
+import { View } from 'react-native'
+import { pin as styles } from './styles'
 
 const Pin = ({ color = 'black', visible = true, style = {} }) => (
   visible &&
@@ -14,26 +15,5 @@ Pin.propTypes = {
   color: React.PropTypes.string,
   visible: React.PropTypes.bool,
 }
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: 'gainsboro',
-  },
-  dotColor: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    margin: 1,
-  },
-})
 
 export default Pin

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Animated, View, StyleSheet } from 'react-native'
+import { Animated, View } from 'react-native'
 import CircleButton from '../CircleButton'
 import ViewPager from '../ViewPager'
 import Waypoint from './Waypoint'
