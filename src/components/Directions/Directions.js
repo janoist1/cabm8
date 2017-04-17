@@ -3,6 +3,7 @@ import { Animated, View, StyleSheet } from 'react-native'
 import CircleButton from '../CircleButton'
 import ViewPager from '../ViewPager'
 import Waypoint from './Waypoint'
+import { directions as styles } from './styles'
 
 const CONTAINER_HEIGHT = 200
 
@@ -43,44 +44,59 @@ class Directions extends Component {
   }
 
   render () {
-    // todo: refactor / spread props
+    const {
+      editing,
+      selectWaypoint,
+      selectedWaypointIndex,
+      style,
+      waypoints,
+      addNextWaypoint,
+      canAddMoreWaypoints,
+      closeDirections,
+      finishEditing,
+      startEditing,
+      submitWaypointAddress,
+      submitWaypointFare,
+      submitWaypointPassengers,
+    } = this.props
+
     return (
-      <Animated.View style={[styles.container, this.props.style, { height: this.height, position: this.position }]}>
+      <Animated.View style={[styles.main.container, style, { height: this.height, position: this.position }]}>
         <ViewPager
-          style={styles.waypoints}
-          selectedIndex={this.props.selectedWaypointIndex}
-          onSelectedIndexChange={this.props.selectWaypoint}
+          style={styles.main.waypoints}
+          selectedIndex={selectedWaypointIndex}
+          onSelectedIndexChange={selectWaypoint}
         >
-          {this.props.waypoints.map((item, i) =>
+          {waypoints.map((item, i) =>
             <Waypoint key={i}
               index={i}
-              active={this.props.selectedWaypointIndex === i}
-              editing={this.props.editing}
+              active={selectedWaypointIndex === i}
+              editing={editing}
               waypoint={item}
-              style={styles.waypoint}
-              onSubmitAddress={address => this.props.submitWaypointAddress(address)}
-              onSubmitFare={fare => this.props.submitWaypointFare(fare)}
-              onSubmitPassengers={passengers => this.props.submitWaypointPassengers(passengers)}
+              style={styles.main.waypoint}
+              onSubmitAddress={address => submitWaypointAddress(address)}
+              onSubmitFare={fare => submitWaypointFare(fare)}
+              onSubmitPassengers={passengers => submitWaypointPassengers(passengers)}
             />
           )}
         </ViewPager>
 
-        <View style={styles.footer}>
-          <CircleButton style={styles.footerButton} title='👈' onPress={this.props.closeDirections} />
-          <CircleButton style={styles.footerButton}
+        <View style={styles.footer.container}>
+          <CircleButton style={styles.footer.button} title='👈' onPress={closeDirections} />
+          <CircleButton style={styles.footer.button}
             title='👍'
-            onPress={() => this.props.finishEditing()}
-            visible={!this.props.canAddMoreWaypoints && this.props.editing && this.props.waypoints.length > 1}
+            onPress={() => finishEditing()}
+            visible={!canAddMoreWaypoints && editing && waypoints.length > 1}
           />
-          <CircleButton style={styles.footerButton}
+          <CircleButton style={styles.footer.button}
             title='✍️'
-            onPress={() => this.props.startEditing()}
-            visible={!this.props.editing}
+            onPress={() => startEditing()}
+            visible={!editing}
           />
-          <CircleButton style={styles.footerButton}
+          <CircleButton style={styles.footer.button}
             title='👉'
-            onPress={() => this.props.addNextWaypoint()}
-            visible={this.props.canAddMoreWaypoints}
+            onPress={() => addNextWaypoint()}
+            visible={canAddMoreWaypoints}
           />
         </View>
       </Animated.View>
@@ -118,34 +134,5 @@ class Directions extends Component {
     }, 10)
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  waypoints: {
-    marginBottom: 5,
-  },
-  waypoint: {
-    margin: 10,
-  },
-  footer: {
-    height: 44,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    marginLeft: 10,
-    marginRight: 10,
-  },
-  footerButton: {
-    flex: 1,
-    width: 36,
-    height: 36,
-    marginLeft: 5,
-  },
-})
 
 export default Directions
