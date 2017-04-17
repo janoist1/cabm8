@@ -13,17 +13,9 @@
     "browser" : true
   },
   "globals" : {
-    "__COOKIE__"          : false,
     "__DEV__"             : false,
     "__PROD__"            : false,
-    "__DEBUG__"           : false,
-    "__COVERAGE__"        : false,
-    "__BASENAME__"        : false,
-    "__API__"             : false,
-    "__REQUEST_TIMEOUT__" : false,
-    "__AUTH__"            : false,
-    "__ROUTES__"          : false,
-    "__THEME__"           : false
+    "__DEBUG__"           : false
   },
   "rules": {
     "key-spacing" : [2, {
