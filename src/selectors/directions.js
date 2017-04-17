@@ -1,3 +1,4 @@
+import { calculateDistance } from '../lib'
 import Config from 'react-native-config'
 
 export const isDirectionsVisible = state => state.directions.visible
@@ -59,3 +60,6 @@ export const getRemainingPassengers = waypoints => {
 
 export const getCanAddMoreWaypoints = state => getWaypoints(state).length < 1 ||
   (getWaypoints(state).length < Config.MAX_WAYPOINTS && getRemainingPassengers(getWaypoints(state)) > 0)
+
+export const isWaypointAtCoordinate = (waypoint, coordinate) =>
+  !!waypoint.coordinate && calculateDistance(waypoint.coordinate, coordinate) === 0

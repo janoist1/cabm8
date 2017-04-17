@@ -1,9 +1,36 @@
 import { createSelector } from 'reselect'
 import * as directions from '../selectors/directions'
 
+export const getAddress = state => state.main.address
+
 export const getPosition = state => state.main.position
 
-export const getRegion = state => state.main.region
+export const getCoordinate = state => ({
+  latitude: getRegion(state).latitude,
+  longitude: getRegion(state).longitude,
+})
+
+export const getRegion = state => {
+  return state.main.region
+}
+
+// todo: review
+// export const getRegion = state => {
+//   if (!directions.isDirectionsVisible(state)) {
+//     return state.main.region
+//   }
+//
+//   const selectedWaypoint = directions.getSelectedWaypoint(state)
+//
+//   if (!directions.isDirectionsEditing(state) || !selectedWaypoint.coordinate) {
+//     return state.main.region
+//   }
+//
+//   return {
+//     ...state.main.region,
+//     ...selectedWaypoint.coordinate,
+//   }
+// }
 
 export const getMarkerVisibilityFilter = state => ({
   editing: directions.isDirectionsEditing(state),

@@ -1,12 +1,17 @@
 import { Dimensions } from 'react-native'
-import { calculateDistance, geocodeCoordinate } from '../lib'
+import { geocodeCoordinate } from '../lib'
 import {
-  getSelectedWaypointIndex,
   getSelectedWaypoint,
+  isWaypointAtCoordinate,
   isDirectionsVisible,
   isDirectionsEditing,
 } from '../selectors/directions'
 import * as directions from './directions'
+import {
+  getAddress,
+  getCoordinate,
+  getRegion,
+} from '../selectors/main'
 
 // actions
 const SET_POSITION = 'cabm8/main/SET_POSITION'
@@ -31,15 +36,12 @@ export const setAddress = address => ({
 
 export const goToCoordinate = coordinate => (dispatch, getState) =>
   dispatch(setRegion({
-    ...getState().main.region,
+    ...getRegion(getState()),
     ...coordinate,
   }))
 
 export const goToMyPosition = () => (dispatch, getState) =>
-getState().main.position && dispatch(goToCoordinate({
-  latitude: getState().main.position.latitude,
-  longitude: getState().main.position.longitude,
-}))
+  getCoordinate(getState()) && dispatch(goToCoordinate(getCoordinate(getState())))
 
 export const changeRegion = region => [
   setRegion(region),
@@ -53,15 +55,9 @@ export const lookupAddress = coordinate => (dispatch, getState) => {
   const state = getState()
   const selectedWaypoint = getSelectedWaypoint(state)
 
-  if (isDirectionsVisible(state)) {
-    if (selectedWaypoint && calculateDistance(selectedWaypoint.coordinate, coordinate) === 0) {
-      // switching waypoints - so that we've already looked up the coords
-      return
-    }
-
-    if (!isDirectionsEditing(state)) {
-      return
-    }
+  if (isDirectionsVisible(state) &&
+    (!isDirectionsEditing(state) || isWaypointAtCoordinate(selectedWaypoint, coordinate))) {
+    return
   }
 
   geocodeCoordinate(coordinate)
@@ -74,32 +70,26 @@ export const lookupAddress = coordinate => (dispatch, getState) => {
         throw Error('No result')
       }
 
-      const result = data.results[0]
-      const address = result.formatted_address
+      const address = data.results[0].formatted_address
 
-      dispatch(setAddress(address))
-
-      if (isDirectionsVisible(state)) {
-        dispatch(directions.updateWaypoint(getSelectedWaypointIndex(state), {
+      dispatch([
+        setAddress(address),
+        directions.updateLocation({
           address,
           coordinate,
-          polyline: [], // makes shouldDirectionsUpdate to return true
-        }))
-      }
+        }),
+      ])
     })
 }
 
-export const openDirections = () => (dispatch, getState) => {
-  const main = getState().main
-
-  dispatch(directions.openDirections({
-    address: main.address,
-    coordinate: {
-      latitude: main.region.latitude,
-      longitude: main.region.longitude,
-    },
-  }))
-}
+export const openDirections = () => (dispatch, getState) =>
+  dispatch([
+    directions.openDirections(),
+    directions.updateLocation({
+      address: getAddress(getState()),
+      coordinate: getCoordinate(getState()),
+    }),
+  ])
 
 // reducer
 const { width, height } = Dimensions.get('window')
