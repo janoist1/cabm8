@@ -62,4 +62,4 @@ export const getCanAddMoreWaypoints = state => getWaypoints(state).length < 1 ||
   (getWaypoints(state).length < Config.MAX_WAYPOINTS && getRemainingPassengers(getWaypoints(state)) > 0)
 
 export const isWaypointAtCoordinate = (waypoint, coordinate) =>
-  !!waypoint.coordinate && calculateDistance(waypoint.coordinate, coordinate) === 0
+  !!waypoint.coordinate && calculateDistance(waypoint.coordinate, coordinate) < 1 // less than a metre

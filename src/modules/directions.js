@@ -3,6 +3,7 @@ import * as main from './main'
 import {
   isDirectionsVisible,
   isDirectionsEditing,
+  isWaypointAtCoordinate,
   getWaypoints,
   getSelectedWaypoint,
   getSelectedWaypointIndex,
@@ -60,7 +61,9 @@ export const updateLocation = ({ address, coordinate }) => (dispatch, getState) 
   dispatch(updateSelectedWaypoint({
     address,
     coordinate,
-    polyline: [], // resetting polyline makes shouldDirectionsUpdate return true
+    // reset polyline if waypoint's coordinate's changed - it makes shouldDirectionsUpdate return true
+    ...(isDirectionsEditing(getState()) && !isWaypointAtCoordinate(getSelectedWaypoint(getState()), coordinate)
+      ? { polyline: [] } : {}),
   }))
 }
 
