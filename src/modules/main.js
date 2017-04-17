@@ -10,6 +10,7 @@ import * as directions from './directions'
 import {
   getAddress,
   getCoordinate,
+  getPosition,
   getRegion,
 } from '../selectors/main'
 
@@ -41,7 +42,7 @@ export const goToCoordinate = coordinate => (dispatch, getState) =>
   }))
 
 export const goToMyPosition = () => (dispatch, getState) =>
-  getCoordinate(getState()) && dispatch(goToCoordinate(getCoordinate(getState())))
+  getPosition(getState()) && dispatch(goToCoordinate(getPosition(getState())))
 
 export const changeRegion = region => [
   setRegion(region),
