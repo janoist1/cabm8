@@ -22,12 +22,6 @@ class Waypoint extends React.Component {
     fare: 0,
   }
 
-  // this is a workaround for an issue with Picker.onValueChange
-  // need to avoid onValueChange to get fired when re-rendering
-  // more: https://github.com/facebook/react-native/issues/12520
-  _pickerWorkaroundFlag1: false // becomes true if we have just swiped to this waypoint
-  _pickerWorkaroundFlag2: false // becomes true if remainingPassengers has changed
-
   constructor (props) {
     super(props)
 
@@ -146,15 +140,6 @@ class Waypoint extends React.Component {
   renderPassengersInput (maxPassengers) {
     const { editing, onSubmitPassengers, waypoint: { passengers } } = this.props
 
-    const applyPickerWorkaround = () => {
-      let flag = this._pickerWorkaroundFlag1 && this._pickerWorkaroundFlag2
-
-      this._pickerWorkaroundFlag1 = false
-      this._pickerWorkaroundFlag2 = false
-
-      return flag
-    }
-
     return (
       <View style={styles.passengers.container}>
         <Text style={[styles.details.value, styles.passengers.value]}>{passengers}</Text>
@@ -163,7 +148,7 @@ class Waypoint extends React.Component {
           style={styles.passengers.picker}
           selectedValue={passengers}
           mode={Picker.MODE_DROPDOWN}
-          onValueChange={value => applyPickerWorkaround() || onSubmitPassengers(value)}>
+          onValueChange={value => this._applyPickerWorkaround() || onSubmitPassengers(value)}>
           {generateNumbers(1, maxPassengers).map(i =>
             <Picker.Item key={i} label={i + ''} value={i} />
           )}
@@ -188,6 +173,21 @@ class Waypoint extends React.Component {
     this.setState(state => ({
       fare: fare ? parseFloat(fare) : 0,
     }))
+  }
+
+  // this is a workaround for an issue with Picker.onValueChange
+  // need to avoid onValueChange to get fired when re-rendering
+  // more: https://github.com/facebook/react-native/issues/12520
+  _pickerWorkaroundFlag1: false // becomes true if we have just swiped to this waypoint
+  _pickerWorkaroundFlag2: false // becomes true if remainingPassengers has changed
+
+  _applyPickerWorkaround () {
+    let flag = this._pickerWorkaroundFlag1 && this._pickerWorkaroundFlag2
+
+    this._pickerWorkaroundFlag1 = false
+    this._pickerWorkaroundFlag2 = false
+
+    return flag
   }
 }
 
