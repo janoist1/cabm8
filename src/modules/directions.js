@@ -1,4 +1,9 @@
-import { decodePolyline, geocodeAddress, getDirections } from '../lib'
+import {
+  boundsToRegion,
+  decodePolyline,
+  geocodeAddress,
+  getDirections,
+} from '../lib'
 import * as main from './main'
 import {
   isDirectionsVisible,
@@ -7,6 +12,7 @@ import {
   getWaypoints,
   getSelectedWaypoint,
   getSelectedWaypointIndex,
+  getRouteRegion,
 } from '../selectors/directions'
 import Config from 'react-native-config'
 
@@ -30,6 +36,7 @@ const SET_SELECTED_WAYPOINT_INDEX = 'cabm8/directions/SET_SELECTED_WAYPOINT_INDE
 const REMOVE_WAYPOINT = 'cabm8/directions/REMOVE_WAYPOINT'
 const RESET_WAYPOINTS = 'cabm8/directions/RESET'
 const SET_EDITING = 'cabm8/directions/SET_EDITING'
+const SET_ROUTE_REGION = 'cabm8/directions/SET_ROUTE_REGION'
 
 // action creators
 export const showDirections = () => ({
@@ -51,6 +58,7 @@ export const openDirections = () => [
 export const closeDirections = () => [
   hideDirections(),
   resetWaypoints(),
+  setRouteRegion(null),
 ]
 
 export const updateLocation = ({ address, coordinate }) => (dispatch, getState) => {
@@ -155,6 +163,11 @@ export const setEditing = editing => ({
   payload: editing,
 })
 
+export const setRouteRegion = routeRegion => ({
+  type: SET_ROUTE_REGION,
+  payload: routeRegion,
+})
+
 export const submitWaypointAddress = address => (dispatch, getState) => {
   if (getSelectedWaypoint(getState()).address === address) {
     return
@@ -213,6 +226,7 @@ export const updateDirections = () => (dispatch, getState) => {
   }
 
   if (!shouldDirectionsUpdate(getWaypoints(getState()))) {
+    dispatch(main.setRegion(getRouteRegion(getState())))
     return
   }
 
@@ -220,6 +234,17 @@ export const updateDirections = () => (dispatch, getState) => {
 
   getDirections(coordinates)
     .then(route => {
+      const bounds = Object.values(route.bounds).map(coordinate => ({
+        latitude: coordinate.lat,
+        longitude: coordinate.lng,
+      }))
+      const region = boundsToRegion(bounds, 2)
+
+      dispatch([
+        setRouteRegion(region),
+        main.setRegion(region),
+      ])
+
       let distance = 0
 
       route.legs.forEach((leg, index) => {
@@ -239,6 +264,7 @@ const initialState = {
   editing: false,
   waypoints: [],
   selectedWaypointIndex: 0,
+  routeRegion: null, // todo: review if it's better to store the entire route and rebuilding polylines from 'cache' too
 }
 
 const ACTION_HANDLERS = {
@@ -276,6 +302,10 @@ const ACTION_HANDLERS = {
   [SET_EDITING]: (state, action) => ({
     ...state,
     editing: action.payload,
+  }),
+  [SET_ROUTE_REGION]: (state, action) => ({
+    ...state,
+    routeRegion: action.payload,
   }),
 }
 

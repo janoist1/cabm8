@@ -63,3 +63,5 @@ export const getCanAddMoreWaypoints = state => getWaypoints(state).length < 1 ||
 
 export const isWaypointAtCoordinate = (waypoint, coordinate) =>
   !!waypoint.coordinate && calculateDistance(waypoint.coordinate, coordinate) < 1 // less than a metre
+
+export const getRouteRegion = state => state.directions.routeRegion
