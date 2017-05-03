@@ -108,15 +108,11 @@ export const setSelectedWaypointIndex = index => ({
 })
 
 export const selectWaypoint = index => (dispatch, getState) => {
-  const { directions } = getState()
-  const { editing, waypoints } = directions
-
-  if (editing) {
-    dispatch(main.goToCoordinate(waypoints[index].coordinate)) // todo: review
-  }
+  const waypoints = getWaypoints(getState())
 
   dispatch([
     setSelectedWaypointIndex(index),
+    main.goToCoordinate(waypoints[index].coordinate),
   ])
 }
 

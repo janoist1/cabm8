@@ -1,20 +1,22 @@
 import { calculateDistance } from '../lib'
 import Config from 'react-native-config'
 
-export const isDirectionsVisible = state => state.directions.visible
+export const getDirections = state => state.directions
 
-export const isDirectionsEditing = state => state.directions.editing
+export const isDirectionsVisible = state => getDirections(state).visible
 
-export const getWaypoints = state => state.directions.waypoints
+export const isDirectionsEditing = state => getDirections(state).editing
+
+export const getWaypoints = state => getDirections(state).waypoints
 
 export const getSelectedWaypoint = state => getWaypoints(state)[getSelectedWaypointIndex(state)]
 
-export const getSelectedWaypointIndex = state => state.directions.selectedWaypointIndex
+export const getSelectedWaypointIndex = state => getDirections(state).selectedWaypointIndex
 
 export const getLastWaypoint = state => getWaypoints(state).slice(-1)[0]
 
 export const getDisplayableWaypoints = state => {
-  const { waypoints } = state.directions
+  const { waypoints } = getDirections(state)
 
   if (waypoints.length < 1) {
     return []
@@ -64,4 +66,4 @@ export const getCanAddMoreWaypoints = state => getWaypoints(state).length < 1 ||
 export const isWaypointAtCoordinate = (waypoint, coordinate) =>
   !!waypoint.coordinate && calculateDistance(waypoint.coordinate, coordinate) < 1 // less than a metre
 
-export const getRouteRegion = state => state.directions.routeRegion
+export const getRouteRegion = state => getDirections(state).routeRegion

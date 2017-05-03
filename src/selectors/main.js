@@ -32,24 +32,23 @@ export const getRegion = state => {
 //   }
 // }
 
-export const getMarkerVisibilityFilter = state => ({
+export const getMarkerFilter = state => ({
   editing: directions.isDirectionsEditing(state),
   selectedWaypointIndex: directions.getSelectedWaypointIndex(state),
 })
 
 export const getMarkers = createSelector(
-  [directions.getWaypoints, getMarkerVisibilityFilter],
-  (waypoints, waypointVisibilityFilter) => waypoints
-    .filter((waypoint, index) => !waypointVisibilityFilter.editing ||
-      index !== waypointVisibilityFilter.selectedWaypointIndex)
-    .map(getMarker)
+  [directions.getWaypoints, getMarkerFilter],
+  (waypoints, filter) => waypoints
+    .map((waypoint, index) => createMarker({ waypoint, calloutVisible: index === filter.selectedWaypointIndex }))
+    .filter((marker, index) => !filter.editing || index !== filter.selectedWaypointIndex)
 )
 
-export const getMarker = (waypoint, index) => ({
-  identifier: index,
+export const createMarker = ({ waypoint, calloutVisible }) => ({
   color: waypoint.color,
   coordinate: waypoint.coordinate,
   title: waypoint.address,
+  calloutVisible,
 })
 
 export const getPinColor = state => state.directions.visible && directions.getSelectedWaypoint(state)

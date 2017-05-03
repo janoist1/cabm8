@@ -12,6 +12,7 @@ import {
   goToMyPosition,
   openDirections,
 } from '../modules/main'
+import { selectWaypoint } from '../modules/directions'
 import Main from '../components/Main'
 
 const mapStateToProps = state => ({
@@ -31,6 +32,7 @@ const mapDispatchToProps = {
   changeRegion,
   goToMyPosition,
   openDirections,
+  selectWaypoint,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Main)

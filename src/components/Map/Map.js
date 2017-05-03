@@ -1,35 +1,37 @@
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
 import MapView from 'react-native-maps'
-import Pin from '../Pin'
+import Marker from './Marker'
 
-export const Map = props => (
-  <View style={[styles.container, props.style]}>
+export const Map = ({
+  children,
+  polylines,
+  markers,
+  region,
+  style,
+  onRegionChangeComplete,
+  onMarkerPress,
+}) =>
+  <View style={[styles.container, style]}>
     <MapView
+      toolbarEnabled={false}
+      showsIndoors={false}
+      moveOnMarkerPress={false}
       style={styles.map}
-      region={props.region}
-      onRegionChangeComplete={props.onRegionChangeComplete}
-    >
-      {props.markers.map((marker, i) => (
-        <MapView.Marker
-          coordinate={marker.coordinate}
-          title={marker.title}
-          description={marker.description}
-          anchor={{ x: 0.5, y: 0.5 }}
-          key={i}
-        >
-          <Pin key={i} color={marker.color} />
-        </MapView.Marker>
-      ))}
+      region={region}
+      onRegionChangeComplete={onRegionChangeComplete}
+  >
+      {markers.map((marker, i) => (
+        <Marker {...marker} onPress={() => onMarkerPress(i)} key={i} />
+    ))}
 
-      {props.polylines.map((polyline, i) => (
+      {polylines.map((polyline, i) => (
         <MapView.Polyline {...polyline} key={i} />
-      ))}
+    ))}
     </MapView>
 
-    {props.children}
+    {children}
   </View>
-)
 
 Map.propTypes = {
   children: React.PropTypes.any,
@@ -38,6 +40,7 @@ Map.propTypes = {
   polylines: React.PropTypes.array.isRequired,
   style: React.PropTypes.any,
   onRegionChangeComplete: React.PropTypes.func,
+  onMarkerPress: React.PropTypes.func,
 }
 
 const styles = StyleSheet.create({

@@ -12,6 +12,7 @@ const Main = ({
   goToMyPosition,
   changeRegion,
   openDirections,
+  selectWaypoint,
   crosshairVisible,
   directionsVisible,
   directionsEditing,
@@ -19,7 +20,7 @@ const Main = ({
   map,
 }) => (
   <View style={styles.container}>
-    <Map style={styles.map} {...map} onRegionChangeComplete={changeRegion}>
+    <Map style={styles.map} {...map} onRegionChangeComplete={changeRegion} onMarkerPress={selectWaypoint}>
       <Pin
         style={styles.pin}
         color={pinColor}
@@ -48,6 +49,7 @@ Main.propTypes = {
   goToMyPosition: React.PropTypes.func.isRequired,
   changeRegion: React.PropTypes.func.isRequired,
   openDirections: React.PropTypes.func.isRequired,
+  selectWaypoint: React.PropTypes.func.isRequired,
   crosshairVisible: React.PropTypes.bool.isRequired,
   directionsVisible: React.PropTypes.bool.isRequired,
   directionsEditing: React.PropTypes.bool.isRequired,
