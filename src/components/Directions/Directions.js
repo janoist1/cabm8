@@ -82,19 +82,19 @@ class Directions extends Component {
         </ViewPager>
 
         <View style={styles.footer.container}>
-          <CircleButton style={styles.footer.button} title='👈' onPress={closeDirections} />
+          <CircleButton style={styles.footer.button} icon='remove' onPress={closeDirections} />
           <CircleButton style={styles.footer.button}
-            title='👍'
+            icon='check'
             onPress={() => finishEditing()}
             visible={!canAddMoreWaypoints && editing && waypoints.length > 1}
           />
           <CircleButton style={styles.footer.button}
-            title='✍️'
+            icon='pencil'
             onPress={() => startEditing()}
             visible={!editing}
           />
           <CircleButton style={styles.footer.button}
-            title='👉'
+            icon='plus'
             onPress={() => addNextWaypoint()}
             visible={canAddMoreWaypoints}
           />

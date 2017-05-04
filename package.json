@@ -15,6 +15,7 @@
 		"react": "~15.4.1",
 		"react-native": "0.42.0",
 		"react-native-config": "^0.3.1",
+		"react-native-fontawesome": "^5.7.0",
 		"react-native-maps": "^0.12.4",
 		"react-native-router-flux": "^3.38.0",
 		"react-redux": "^5.0.3",

@@ -20,15 +20,12 @@ export const directions = {
       height: 44,
       flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'flex-end',
       marginBottom: 10,
       marginLeft: 10,
       marginRight: 10,
     },
     button: {
-      flex: 1,
-      width: 36,
-      height: 36,
-      marginLeft: 5,
     },
   }),
 }

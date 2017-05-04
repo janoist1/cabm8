@@ -27,10 +27,7 @@ const Main = ({
         visible={!directionsVisible || directionsEditing}
       />
 
-      <Crosshair style={styles.crosshair}
-        visible={crosshairVisible}
-        onPress={goToMyPosition}
-      />
+      <Crosshair style={styles.crosshair} visible={crosshairVisible} onPress={goToMyPosition} />
     </Map>
 
     <AddressBar

@@ -30,8 +30,6 @@ export const main = StyleSheet.create({
     right: 10,
     bottom: 10,
     zIndex: 1,
-    width: 30,
-    height: 30,
   },
 })
 
